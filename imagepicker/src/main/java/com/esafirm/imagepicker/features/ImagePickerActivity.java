@@ -20,7 +20,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -41,6 +40,7 @@ import com.esafirm.imagepicker.listeners.OnImageClickListener;
 import com.esafirm.imagepicker.model.Folder;
 import com.esafirm.imagepicker.model.Image;
 import com.esafirm.imagepicker.view.GridSpacingItemDecoration;
+import com.esafirm.imagepicker.view.MediaActionProvider;
 import com.esafirm.imagepicker.view.ProgressWheel;
 
 import java.util.ArrayList;
@@ -56,6 +56,8 @@ public class ImagePickerActivity extends AppCompatActivity
 
     public static final int RC_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 23;
     public static final int RC_PERMISSION_REQUEST_CAMERA = 24;
+    public static final int RC_START_EXTERNAL_PICKER = 25;
+
     private static final int RC_CAPTURE = 2000;
     private static final String TAG = "ImagePickerActivity";
     private ActionBar actionBar;
@@ -454,14 +456,26 @@ public class ImagePickerActivity extends AppCompatActivity
         getMenuInflater().inflate(R.menu.image_picker_menu_main, menu);
 
         MenuItem shareItem = menu.findItem(R.id.menu_other);
-        ShareActionProvider myShareActionProvider =
-                (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
+        MediaActionProvider myShareActionProvider =
+                (MediaActionProvider) MenuItemCompat.getActionProvider(shareItem);
 
 
-        if (myShareActionProvider != null)
-        {
+        if (myShareActionProvider != null) {
 
-            myShareActionProvider.setShareIntent();
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.setType("image/*");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && config.getMode() == MODE_MULTIPLE) {
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+            }
+            myShareActionProvider.setIntent(intent);
+            myShareActionProvider.setOnIntentClickListener(new MediaActionProvider.OnIntentClickListener() {
+                @Override
+                public void onIntentClick(Intent intent) {
+                    startActivityForResult(intent, RC_START_EXTERNAL_PICKER);
+                }
+            });
         }
 
         return true;
@@ -521,7 +535,11 @@ public class ImagePickerActivity extends AppCompatActivity
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_CAPTURE && resultCode == RESULT_OK) {
             presenter.finishCaptureImage(this, data, config);
+        } else if (requestCode == RC_START_EXTERNAL_PICKER && resultCode == RESULT_OK) {
+            presenter.finishPickExternalApplication(this, data, config);
+
         }
+
     }
 
     /**

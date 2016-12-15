@@ -10,14 +10,15 @@
         tools:ignore="AlwaysShowAction"/>
 
     <item
-        android:id="@+id/menu_done"
-        android:title="@string/ef_done"
+        android:id="@+id/menu_other"
+        android:title="@string/other"
+        android:icon="@drawable/ic_collections"
+        app:actionProviderClass="com.esafirm.imagepicker.view.MediaActionProvider"
         app:showAsAction="always"/>
 
     <item
-        android:id="@+id/menu_other"
-        android:actionProviderClass="android.widget.ShareActionProvider"
-        android:title="@string/other"
-        app:showAsAction="never"/>
+        android:id="@+id/menu_done"
+        android:title="@string/ef_done"
+        app:showAsAction="always"/>
 
 </menu>
