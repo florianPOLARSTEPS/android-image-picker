@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import com.esafirm.imagepicker.features.common.ImageLoaderListener;
 import com.esafirm.imagepicker.model.Folder;
@@ -20,6 +21,7 @@ import java.util.concurrent.Executors;
 
 public class ImageLoader {
 
+    private static final String TAG = ImageLoader.class.getSimpleName();
     private final String[] projection = new String[]{
             MediaStore.Images.Media._ID,
             MediaStore.Images.Media.DISPLAY_NAME,
@@ -35,6 +37,10 @@ public class ImageLoader {
 
     public void loadDeviceImages(final boolean isFolderMode, final ImageLoaderListener listener) {
         getExecutorService().execute(new ImageLoadRunnable(isFolderMode, listener));
+    }
+
+    public void loadExternalDeviceImages(List<Uri> uris, final ImageLoaderListener listener) {
+        getExecutorService().execute(new ExternalImageLoadRunnable(uris, listener));
     }
 
     public void abortLoadImages() {
@@ -87,8 +93,7 @@ public class ImageLoader {
 
                     File file = new File(path);
                     if (file.exists()) {
-                        Image image = new Image(id, name, path, false);
-                        image.setUri(contentUri);
+                        Image image = new Image(id, name, path, contentUri, false);
                         temp.add(image);
 
                         if (folderMap != null) {
@@ -112,6 +117,59 @@ public class ImageLoader {
             }
 
             listener.onImageLoaded(temp, folders);
+        }
+    }
+
+    private class ExternalImageLoadRunnable implements Runnable {
+
+        private final ImageLoaderListener listener;
+        private final List<Uri> mImageUris;
+
+        public ExternalImageLoadRunnable(List<Uri> mImageUris, ImageLoaderListener listener) {
+            this.listener = listener;
+            this.mImageUris = mImageUris;
+        }
+
+        @Override
+        public void run() {
+
+            List<Image> temp = new ArrayList<>();
+
+            for (Uri mImageUri : mImageUris) {
+
+                Cursor cursor = context.getContentResolver().query(mImageUri, projection,
+                        null, null, null);
+
+                try {
+                    if (cursor == null) {
+                        listener.onFailed(new NullPointerException());
+                        return;
+                    }
+
+                    if (cursor.moveToFirst()) {
+                        long id = cursor.getLong(cursor.getColumnIndex(projection[0]));
+                        String name = cursor.getString(cursor.getColumnIndex(projection[1]));
+                        String path = cursor.getString(cursor.getColumnIndex(projection[2]));
+                        Uri contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+
+                        File file = new File(path);
+                        if (file.exists()) {
+                            Image image = new Image(id, name, path, contentUri, false);
+                            temp.add(image);
+                        }
+                    }
+                    cursor.close();
+                } catch (Exception e) {
+                    Log.e(TAG, "error loading image for uri: " + mImageUri);
+                } finally {
+                    if (cursor != null) {
+                        cursor.close();
+                    }
+                }
+            }
+
+
+            listener.onImageLoaded(temp, null);
         }
     }
 }

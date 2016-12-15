@@ -1,8 +1,11 @@
 package com.esafirm.imagepicker.features;
 
 import android.app.Activity;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
@@ -17,6 +20,7 @@ import com.esafirm.imagepicker.model.Folder;
 import com.esafirm.imagepicker.model.Image;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
@@ -102,6 +106,42 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
             return;
         }
         activity.startActivityForResult(intent, requestCode);
+    }
+
+    public void finishPickExternalApplication(Context context, Intent data, final ImagePickerConfig config) {
+
+        List<Uri> images = new ArrayList<>();
+        if (data.getData() != null) {
+            Uri mImageUri = data.getData();
+            images.add(mImageUri);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            if (data.getClipData() != null) {
+                ClipData mClipData = data.getClipData();
+                for (int i = 0; i < mClipData.getItemCount(); i++) {
+                    Uri uri = mClipData.getItemAt(i).getUri();
+                    if (!images.contains(uri)) {
+                        images.add(uri);
+                    }
+                }
+            }
+        }
+
+        if (images.size() > 0) {
+            imageLoader.loadExternalDeviceImages(images, new ImageLoaderListener() {
+                @Override
+                public void onImageLoaded(List<Image> images, List<Folder> folders) {
+                    getView().finishPickImages(images);
+                }
+
+                @Override
+                public void onFailed(Throwable throwable) {
+                    //TODO: handle error
+                }
+            });
+        }
+
+
     }
 
     public void finishCaptureImage(Context context, Intent data, final ImagePickerConfig config) {

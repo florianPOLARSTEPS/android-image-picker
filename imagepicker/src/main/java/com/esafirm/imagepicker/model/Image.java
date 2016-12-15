@@ -26,17 +26,19 @@ public class Image implements Parcelable {
     private Uri uri;
     private boolean isSelected;
 
-    public Image(long id, String name, String path, boolean isSelected) {
+    public Image(long id, String name, String path, Uri uri, boolean isSelected) {
         this.id = id;
         this.name = name;
         this.path = path;
         this.isSelected = isSelected;
+        this.uri = uri;
     }
 
     protected Image(Parcel in) {
         this.id = in.readLong();
         this.name = in.readString();
         this.path = in.readString();
+        this.uri = in.readParcelable(Uri.class.getClassLoader());
         this.isSelected = in.readByte() != 0;
     }
 

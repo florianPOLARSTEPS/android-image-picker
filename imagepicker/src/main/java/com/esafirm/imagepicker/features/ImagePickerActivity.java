@@ -15,6 +15,7 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -39,6 +40,7 @@ import com.esafirm.imagepicker.listeners.OnImageClickListener;
 import com.esafirm.imagepicker.model.Folder;
 import com.esafirm.imagepicker.model.Image;
 import com.esafirm.imagepicker.view.GridSpacingItemDecoration;
+import com.esafirm.imagepicker.view.MediaActionProvider;
 import com.esafirm.imagepicker.view.ProgressWheel;
 
 import java.util.ArrayList;
@@ -52,13 +54,12 @@ import static com.esafirm.imagepicker.helper.ImagePickerPreferences.PREF_WRITE_E
 public class ImagePickerActivity extends AppCompatActivity
         implements ImagePickerView, OnImageClickListener {
 
-    private static final int RC_CAPTURE = 2000;
-
-    private static final String TAG = "ImagePickerActivity";
-
     public static final int RC_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 23;
     public static final int RC_PERMISSION_REQUEST_CAMERA = 24;
+    public static final int RC_START_EXTERNAL_PICKER = 25;
 
+    private static final int RC_CAPTURE = 2000;
+    private static final String TAG = "ImagePickerActivity";
     private ActionBar actionBar;
     private RelativeLayout mainLayout;
     private ProgressWheel progressBar;
@@ -81,27 +82,6 @@ public class ImagePickerActivity extends AppCompatActivity
 
     private int imageColumns;
     private int folderColumns;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.ef_activity_image_picker);
-
-        Intent intent = getIntent();
-        if (intent == null || intent.getExtras() == null) {
-            finish();
-            return;
-        }
-
-        preferences = new ImagePickerPreferences(this);
-        presenter = new ImagePickerPresenter(new ImageLoader(this));
-        presenter.attachView(this);
-
-        setupExtras();
-        setupView();
-
-        orientationBasedUI(getResources().getConfiguration().orientation);
-    }
 
     private void setupView() {
         mainLayout = (RelativeLayout) findViewById(R.id.main);
@@ -149,94 +129,6 @@ public class ImagePickerActivity extends AppCompatActivity
         });
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        getDataWithPermission();
-    }
-
-    /**
-     * Set image adapter
-     * 1. Set new data
-     * 2. Update item decoration
-     * 3. Update title
-     */
-    private void setImageAdapter(List<Image> images) {
-        imageAdapter.setData(images);
-        setItemDecoration(imageColumns);
-        recyclerView.setAdapter(imageAdapter);
-        updateTitle();
-    }
-
-    /**
-     * Set folder adapter
-     * 1. Set new data
-     * 2. Update item decoration
-     * 3. Update title
-     */
-    private void setFolderAdapter(List<Folder> folders) {
-        if (folders != null) {
-            folderAdapter.setData(folders);
-        }
-        setItemDecoration(folderColumns);
-        recyclerView.setAdapter(folderAdapter);
-
-        if (foldersState != null) {
-            layoutManager.setSpanCount(folderColumns);
-            recyclerView.getLayoutManager().onRestoreInstanceState(foldersState);
-        }
-        updateTitle();
-    }
-
-    /**
-     * Create option menus and update title
-     */
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.image_picker_menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        MenuItem menuCamera = menu.findItem(R.id.menu_camera);
-        if (menuCamera != null) {
-            menuCamera.setVisible(config.isShowCamera());
-        }
-
-        MenuItem menuDone = menu.findItem(R.id.menu_done);
-        if (menuDone != null) {
-            menuDone.setVisible(!isDisplayingFolderView() && !imageAdapter.getSelectedImages().isEmpty());
-
-            if (config.getMode() == MODE_SINGLE && config.isReturnAfterFirst()) {
-                menuDone.setVisible(false);
-            }
-        }
-        return super.onPrepareOptionsMenu(menu);
-    }
-
-    /**
-     * Handle option menu's click event
-     */
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == android.R.id.home) {
-            onBackPressed();
-            return true;
-        }
-        if (id == R.id.menu_done) {
-            onDone();
-            return true;
-        }
-        if (id == R.id.menu_camera) {
-            captureImageWithPermission();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
     /**
      * On finish selected image
      * Get all selected images then return image to caller activity
@@ -244,15 +136,6 @@ public class ImagePickerActivity extends AppCompatActivity
     private void onDone() {
         List<Image> selectedImages = imageAdapter.getSelectedImages();
         presenter.onDoneSelectImages(selectedImages);
-    }
-
-    /**
-     * Config recyclerView when configuration changed
-     */
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        orientationBasedUI(newConfig.orientation);
     }
 
     /**
@@ -268,18 +151,6 @@ public class ImagePickerActivity extends AppCompatActivity
         recyclerView.setHasFixedSize(true);
         setItemDecoration(columns);
     }
-
-    /**
-     * Set item decoration
-     */
-    private void setItemDecoration(int columns) {
-        layoutManager.setSpanCount(columns);
-        if (itemOffsetDecoration != null)
-            recyclerView.removeItemDecoration(itemOffsetDecoration);
-        itemOffsetDecoration = new GridSpacingItemDecoration(columns, getResources().getDimensionPixelSize(R.dimen.ef_item_padding), false);
-        recyclerView.addItemDecoration(itemOffsetDecoration);
-    }
-
 
     /**
      * Check permission
@@ -330,7 +201,6 @@ public class ImagePickerActivity extends AppCompatActivity
 
     }
 
-
     private void requestCameraPermission() {
         Log.w(TAG, "Write External permission is not granted. Requesting permission");
 
@@ -358,42 +228,6 @@ public class ImagePickerActivity extends AppCompatActivity
     }
 
     /**
-     * Handle permission results
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-
-        switch (requestCode) {
-            case RC_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE: {
-                if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "Write External permission granted");
-                    getData();
-                    return;
-                }
-                Log.e(TAG, "Permission not granted: results len = " + grantResults.length +
-                        " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)"));
-                finish();
-            }
-            break;
-            case RC_PERMISSION_REQUEST_CAMERA: {
-                if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "Camera permission granted");
-                    captureImage();
-                    return;
-                }
-                Log.e(TAG, "Permission not granted: results len = " + grantResults.length +
-                        " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)"));
-                break;
-            }
-            default: {
-                Log.d(TAG, "Got unexpected permission result: " + requestCode);
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-                break;
-            }
-        }
-    }
-
-    /**
      * Open app settings screen
      */
     private void openAppSettings() {
@@ -401,11 +235,6 @@ public class ImagePickerActivity extends AppCompatActivity
                 Uri.fromParts("package", getPackageName(), null));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
-    }
-
-    @Override
-    public void onClick(View view, int position) {
-        clickImage(position);
     }
 
     /**
@@ -452,18 +281,6 @@ public class ImagePickerActivity extends AppCompatActivity
     }
 
     /**
-     * Check if the captured image is stored successfully
-     * Then reload data
-     */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RC_CAPTURE && resultCode == RESULT_OK) {
-            presenter.finishCaptureImage(this, data, config);
-        }
-    }
-
-    /**
      * Request for camera permission
      */
     private void captureImageWithPermission() {
@@ -491,23 +308,6 @@ public class ImagePickerActivity extends AppCompatActivity
         presenter.captureImage(this, config, RC_CAPTURE);
     }
 
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        if (handler == null) {
-            handler = new Handler();
-        }
-        observer = new ContentObserver(new Handler()) {
-            @Override
-            public void onChange(boolean selfChange) {
-                getData();
-            }
-        };
-        getContentResolver().registerContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, false, observer);
-    }
-
     /**
      * Update activity title
      * If we're displaying folder, set folder title
@@ -531,6 +331,104 @@ public class ImagePickerActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Check if displaying folders view
+     */
+    private boolean isDisplayingFolderView() {
+        return (config.isFolderMode() &&
+                (recyclerView.getAdapter() == null || recyclerView.getAdapter() instanceof FolderPickerAdapter));
+    }
+
+    /**
+     * Set image adapter
+     * 1. Set new data
+     * 2. Update item decoration
+     * 3. Update title
+     */
+    private void setImageAdapter(List<Image> images) {
+        imageAdapter.setData(images);
+        setItemDecoration(imageColumns);
+        recyclerView.setAdapter(imageAdapter);
+        updateTitle();
+    }
+
+    /**
+     * Set folder adapter
+     * 1. Set new data
+     * 2. Update item decoration
+     * 3. Update title
+     */
+    private void setFolderAdapter(List<Folder> folders) {
+        if (folders != null) {
+            folderAdapter.setData(folders);
+        }
+        setItemDecoration(folderColumns);
+        recyclerView.setAdapter(folderAdapter);
+
+        if (foldersState != null) {
+            layoutManager.setSpanCount(folderColumns);
+            recyclerView.getLayoutManager().onRestoreInstanceState(foldersState);
+        }
+        updateTitle();
+    }
+
+    /**
+     * Set item decoration
+     */
+    private void setItemDecoration(int columns) {
+        layoutManager.setSpanCount(columns);
+        if (itemOffsetDecoration != null)
+            recyclerView.removeItemDecoration(itemOffsetDecoration);
+        itemOffsetDecoration = new GridSpacingItemDecoration(columns, getResources().getDimensionPixelSize(R.dimen.ef_item_padding), false);
+        recyclerView.addItemDecoration(itemOffsetDecoration);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.ef_activity_image_picker);
+
+        Intent intent = getIntent();
+        if (intent == null || intent.getExtras() == null) {
+            finish();
+            return;
+        }
+
+        preferences = new ImagePickerPreferences(this);
+        presenter = new ImagePickerPresenter(new ImageLoader(this));
+        presenter.attachView(this);
+
+        setupExtras();
+        setupView();
+
+        orientationBasedUI(getResources().getConfiguration().orientation);
+    }
+
+    /**
+     * Config recyclerView when configuration changed
+     */
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        orientationBasedUI(newConfig.orientation);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        if (handler == null) {
+            handler = new Handler();
+        }
+        observer = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange) {
+                getData();
+            }
+        };
+        getContentResolver().registerContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, false, observer);
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -551,11 +449,97 @@ public class ImagePickerActivity extends AppCompatActivity
     }
 
     /**
-     * Check if displaying folders view
+     * Create option menus and update title
      */
-    private boolean isDisplayingFolderView() {
-        return (config.isFolderMode() &&
-                (recyclerView.getAdapter() == null || recyclerView.getAdapter() instanceof FolderPickerAdapter));
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.image_picker_menu_main, menu);
+
+        MenuItem shareItem = menu.findItem(R.id.menu_other);
+        MediaActionProvider myShareActionProvider =
+                (MediaActionProvider) MenuItemCompat.getActionProvider(shareItem);
+
+
+        if (myShareActionProvider != null) {
+
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.setType("image/*");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && config.getMode() == MODE_MULTIPLE) {
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+            }
+            myShareActionProvider.setIntent(intent);
+            myShareActionProvider.setOnIntentClickListener(new MediaActionProvider.OnIntentClickListener() {
+                @Override
+                public void onIntentClick(Intent intent) {
+                    startActivityForResult(intent, RC_START_EXTERNAL_PICKER);
+                }
+            });
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem menuCamera = menu.findItem(R.id.menu_camera);
+        if (menuCamera != null) {
+            menuCamera.setVisible(config.isShowCamera());
+        }
+
+        MenuItem menuDone = menu.findItem(R.id.menu_done);
+        if (menuDone != null) {
+            menuDone.setVisible(!isDisplayingFolderView() && !imageAdapter.getSelectedImages().isEmpty());
+
+            if (config.getMode() == MODE_SINGLE && config.isReturnAfterFirst()) {
+                menuDone.setVisible(false);
+            }
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    /**
+     * Handle option menu's click event
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        if (id == R.id.menu_done) {
+            onDone();
+            return true;
+        }
+        if (id == R.id.menu_camera) {
+            captureImageWithPermission();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onClick(View view, int position) {
+        clickImage(position);
+    }
+
+    /**
+     * Check if the captured image is stored successfully
+     * Then reload data
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_CAPTURE && resultCode == RESULT_OK) {
+            presenter.finishCaptureImage(this, data, config);
+        } else if (requestCode == RC_START_EXTERNAL_PICKER && resultCode == RESULT_OK) {
+            presenter.finishPickExternalApplication(this, data, config);
+
+        }
+
     }
 
     /**
@@ -571,22 +555,57 @@ public class ImagePickerActivity extends AppCompatActivity
         super.onBackPressed();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getDataWithPermission();
+    }
+
+    /**
+     * Handle permission results
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+        switch (requestCode) {
+            case RC_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE: {
+                if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "Write External permission granted");
+                    getData();
+                    return;
+                }
+                Log.e(TAG, "Permission not granted: results len = " + grantResults.length +
+                        " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)"));
+                finish();
+            }
+            break;
+            case RC_PERMISSION_REQUEST_CAMERA: {
+                if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "Camera permission granted");
+                    captureImage();
+                    return;
+                }
+                Log.e(TAG, "Permission not granted: results len = " + grantResults.length +
+                        " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)"));
+                break;
+            }
+            default: {
+                Log.d(TAG, "Got unexpected permission result: " + requestCode);
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+                break;
+            }
+        }
+    }
+
     /* --------------------------------------------------- */
     /* > View Methods */
     /* --------------------------------------------------- */
 
     @Override
-    public void finishPickImages(List<Image> images) {
-        Intent data = new Intent();
-        data.putParcelableArrayListExtra(EXTRA_SELECTED_IMAGES,
-                (ArrayList<? extends Parcelable>) images);
-        setResult(RESULT_OK, data);
-        finish();
-    }
-
-    @Override
-    public void showCapturedImage() {
-        getDataWithPermission();
+    public void showLoading(boolean isLoading) {
+        progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        recyclerView.setVisibility(isLoading ? View.GONE : View.VISIBLE);
+        emptyTextView.setVisibility(View.GONE);
     }
 
     @Override
@@ -608,17 +627,24 @@ public class ImagePickerActivity extends AppCompatActivity
     }
 
     @Override
-    public void showLoading(boolean isLoading) {
-        progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-        recyclerView.setVisibility(isLoading ? View.GONE : View.VISIBLE);
-        emptyTextView.setVisibility(View.GONE);
-    }
-
-    @Override
     public void showEmpty() {
         progressBar.setVisibility(View.GONE);
         recyclerView.setVisibility(View.GONE);
         emptyTextView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void showCapturedImage() {
+        getDataWithPermission();
+    }
+
+    @Override
+    public void finishPickImages(List<Image> images) {
+        Intent data = new Intent();
+        data.putParcelableArrayListExtra(EXTRA_SELECTED_IMAGES,
+                (ArrayList<? extends Parcelable>) images);
+        setResult(RESULT_OK, data);
+        finish();
     }
 
 }
