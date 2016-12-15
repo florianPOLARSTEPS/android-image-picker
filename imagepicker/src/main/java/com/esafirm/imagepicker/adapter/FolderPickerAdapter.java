@@ -1,17 +1,18 @@
 package com.esafirm.imagepicker.adapter;
 
 import android.content.Context;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.esafirm.imagepicker.R;
+import com.esafirm.imagepicker.helper.FrescoHelper;
 import com.esafirm.imagepicker.listeners.OnFolderClickListener;
 import com.esafirm.imagepicker.model.Folder;
+import com.facebook.drawee.view.SimpleDraweeView;
 
 import java.util.List;
 
@@ -20,16 +21,24 @@ import java.util.List;
  */
 public class FolderPickerAdapter extends RecyclerView.Adapter<FolderPickerAdapter.FolderViewHolder> {
 
+    private final OnFolderClickListener folderClickListener;
     private Context context;
     private LayoutInflater inflater;
-    private final OnFolderClickListener folderClickListener;
-
     private List<Folder> folders;
+    private int maxWidth;
+    private int maxHeight;
 
     public FolderPickerAdapter(Context context, OnFolderClickListener folderClickListener) {
         this.context = context;
         this.folderClickListener = folderClickListener;
         inflater = LayoutInflater.from(this.context);
+        maxHeight = context.getResources().getDimensionPixelSize(R.dimen.ef_thumb_max_height);
+        maxWidth = context.getResources().getDimensionPixelSize(R.dimen.ef_thumb_max_width);
+    }
+
+    public void setData(List<Folder> folders) {
+        this.folders = folders;
+        notifyDataSetChanged();
     }
 
     @Override
@@ -43,12 +52,10 @@ public class FolderPickerAdapter extends RecyclerView.Adapter<FolderPickerAdapte
 
         final Folder folder = folders.get(position);
 
-        Glide.with(context)
-                .load(folder.getImages().get(0).getPath())
-                .placeholder(R.drawable.folder_placeholder)
-                .error(R.drawable.folder_placeholder)
-                .into(holder.image);
-
+        Uri uri = folder.getImages().get(0).getUri();
+        if (uri != null) {
+            FrescoHelper.setImageUriResizeToImage(holder.image, uri, maxWidth, maxHeight);
+        }
         holder.name.setText(folders.get(position).getFolderName());
         holder.number.setText(String.valueOf(folders.get(position).getImages().size()));
 
@@ -61,12 +68,6 @@ public class FolderPickerAdapter extends RecyclerView.Adapter<FolderPickerAdapte
         });
     }
 
-    public void setData(List<Folder> folders) {
-        this.folders = folders;
-
-        notifyDataSetChanged();
-    }
-
     @Override
     public int getItemCount() {
         return folders.size();
@@ -74,14 +75,14 @@ public class FolderPickerAdapter extends RecyclerView.Adapter<FolderPickerAdapte
 
     public static class FolderViewHolder extends RecyclerView.ViewHolder {
 
-        private ImageView image;
+        private SimpleDraweeView image;
         private TextView name;
         private TextView number;
 
         public FolderViewHolder(View itemView) {
             super(itemView);
 
-            image = (ImageView) itemView.findViewById(R.id.image);
+            image = (SimpleDraweeView) itemView.findViewById(R.id.image);
             name = (TextView) itemView.findViewById(R.id.tv_name);
             number = (TextView) itemView.findViewById(R.id.tv_number);
         }

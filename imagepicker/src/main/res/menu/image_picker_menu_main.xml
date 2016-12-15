@@ -13,4 +13,11 @@
         android:id="@+id/menu_done"
         android:title="@string/ef_done"
         app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/menu_other"
+        android:actionProviderClass="android.widget.ShareActionProvider"
+        android:title="@string/other"
+        app:showAsAction="never"/>
+
 </menu>

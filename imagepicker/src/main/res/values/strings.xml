@@ -24,5 +24,6 @@
 
     <!--Config-->
     <string name="ef_image_directory" translatable="false">Camera</string>
+    <string name="other">Other</string>
 
 </resources>

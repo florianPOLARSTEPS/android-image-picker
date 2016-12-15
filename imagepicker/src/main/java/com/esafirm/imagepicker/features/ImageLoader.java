@@ -1,7 +1,9 @@
 package com.esafirm.imagepicker.features;
 
+import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.provider.MediaStore;
 
 import com.esafirm.imagepicker.features.common.ImageLoaderListener;
@@ -18,19 +20,18 @@ import java.util.concurrent.Executors;
 
 public class ImageLoader {
 
-    private Context context;
-    private ExecutorService executorService;
-
-    public ImageLoader(Context context) {
-        this.context = context;
-    }
-
     private final String[] projection = new String[]{
             MediaStore.Images.Media._ID,
             MediaStore.Images.Media.DISPLAY_NAME,
             MediaStore.Images.Media.DATA,
             MediaStore.Images.Media.BUCKET_DISPLAY_NAME
     };
+    private Context context;
+    private ExecutorService executorService;
+
+    public ImageLoader(Context context) {
+        this.context = context;
+    }
 
     public void loadDeviceImages(final boolean isFolderMode, final ImageLoaderListener listener) {
         getExecutorService().execute(new ImageLoadRunnable(isFolderMode, listener));
@@ -82,10 +83,12 @@ public class ImageLoader {
                     String name = cursor.getString(cursor.getColumnIndex(projection[1]));
                     String path = cursor.getString(cursor.getColumnIndex(projection[2]));
                     String bucket = cursor.getString(cursor.getColumnIndex(projection[3]));
+                    Uri contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
 
                     File file = new File(path);
                     if (file.exists()) {
                         Image image = new Image(id, name, path, false);
+                        image.setUri(contentUri);
                         temp.add(image);
 
                         if (folderMap != null) {

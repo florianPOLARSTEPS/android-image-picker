@@ -19,6 +19,7 @@ import com.esafirm.imagepicker.features.camera.ImmediateCameraModule;
 import com.esafirm.imagepicker.features.camera.OnImageReadyListener;
 import com.esafirm.imagepicker.model.Image;
 import com.esafirm.rximagepicker.RxImagePicker;
+import com.facebook.drawee.backends.pipeline.Fresco;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Fresco.initialize(this);
 
         textView = (TextView) findViewById(R.id.text_view);
 
