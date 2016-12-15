@@ -13,10 +13,4 @@
         <attr name="ef_matProg_linearProgress" format="boolean"/>
     </declare-styleable>
 
-    <attr name="ef_primary" format="reference|color"/>
-    <attr name="ef_primary_dark" format="reference|color"/>
-    <attr name="ef_accent" format="reference|color"/>
-
-    <attr name="ef_picker_style" format="reference"/>
-
 </resources>

@@ -1,10 +1,18 @@
 <resources>
 
     <style name="ef_AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="android:itemTextAppearance">@style/ef_AppTheme.ItemTextStyle</item>
+        <item name="colorAccent">@color/ef_colorAccent</item>
+        <item name="colorPrimary">@color/ef_colorPrimary</item>
+        <item name="colorPrimaryDark">@color/ef_colorPrimaryDark</item>
     </style>
 
-    <style name="ef_AppTheme.Default" parent="@style/ef_AppTheme">
+    <style name="ef_AppTheme.Picker" parent="ef_AppTheme">
+
+        <item name="windowActionModeOverlay">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+        <item name="android:itemTextAppearance">@style/ef_AppTheme.ItemTextStyle</item>
 
     </style>
 
