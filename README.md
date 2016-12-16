@@ -4,7 +4,7 @@ A simple library to select images from the gallery and camera.
 This is a port of the popular android-image-picker ([original](https://github.com/esafirm/android-image-picker/)) that uses [fresco](https://github.com/facebook/fresco) for image loading.
 Additionally it has the capability to open external pickers to choose from Google Photos or other galleries. This is a **WORK IN PROGRESS**
 
-
+**I am working on a pull request for the main repository, so this will at some point be obsolete.**
 
 ## Screenshot
 
@@ -26,9 +26,9 @@ And add this to your module's `build.gradle`
 
 ```groovy
 dependencies {
-	compile 'com.github.esafirm.android-image-picker:imagepicker:x.y.z'
+	compile 'com.github.florianpolarsteps.android-image-picker:imagepicker:develop-SNAPSHOT'
 	// for experimental rx picker
-	compile 'com.github.esafirm.android-image-picker:rximagepicker:x.y.z'
+	compile 'com.github.florianpolarsteps.android-image-picker:rximagepicker:develop-SNAPSHOT'
 }
 ```
 
