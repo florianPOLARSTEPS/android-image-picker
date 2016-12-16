@@ -335,10 +335,12 @@ public class ImagePickerActivity extends AppCompatActivity
 
             final Snackbar snackBar = getSnackbarLazy();
             snackBar.setText(snackBarMessage);
-            snackBar.setAction(R.string.ef_done, new View.OnClickListener() {
+            snackBar.setAction(R.string.ef_clear, new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    onDone();
+                    imageAdapter.clearSelectedImages();
+                    updateActionButtons();
+                    updateSelectionIndicator();
                 }
             });
             if (imageSize > 0) {
