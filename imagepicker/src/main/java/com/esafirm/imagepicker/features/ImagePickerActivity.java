@@ -48,7 +48,6 @@ import java.util.List;
 
 import static com.esafirm.imagepicker.features.ImagePicker.EXTRA_SELECTED_IMAGES;
 import static com.esafirm.imagepicker.features.ImagePicker.MODE_MULTIPLE;
-import static com.esafirm.imagepicker.features.ImagePicker.MODE_SINGLE;
 import static com.esafirm.imagepicker.helper.ImagePickerPreferences.PREF_WRITE_EXTERNAL_STORAGE_REQUESTED;
 
 public class ImagePickerActivity extends AppCompatActivity
@@ -82,6 +81,9 @@ public class ImagePickerActivity extends AppCompatActivity
 
     private int imageColumns;
     private int folderColumns;
+    private Snackbar selectionSnackBar;
+    private MenuItem mDoneButton;
+    private MenuItem mShareItem;
 
     private void setupView() {
         mainLayout = (RelativeLayout) findViewById(R.id.main);
@@ -267,7 +269,8 @@ public class ImagePickerActivity extends AppCompatActivity
                 }
             }
         }
-        updateTitle();
+        updateSelectionIndicator();
+        updateActionButtons();
     }
 
     private int selectedImagePosition(Image image) {
@@ -318,17 +321,62 @@ public class ImagePickerActivity extends AppCompatActivity
 
         if (isDisplayingFolderView()) {
             actionBar.setTitle(config.getFolderTitle());
-            return;
-        }
-
-        if (imageAdapter.getSelectedImages().isEmpty()) {
+        } else {
             actionBar.setTitle(config.getImageTitle());
-        } else if (config.getMode() == ImagePicker.MODE_MULTIPLE) {
-            int imageSize = imageAdapter.getSelectedImages().size();
-            actionBar.setTitle(config.getLimit() == ImagePicker.MAX_LIMIT
-                    ? String.format(getString(R.string.ef_selected), imageSize)
-                    : String.format(getString(R.string.ef_selected_with_limit), imageSize, config.getLimit()));
         }
+    }
+
+    public void updateSelectionIndicator() {
+        if (config.getMode() == ImagePicker.MODE_MULTIPLE) {
+            int imageSize = imageAdapter.getSelectedImages().size();
+            String snackBarMessage = config.getLimit() == ImagePicker.MAX_LIMIT
+                    ? String.format(getString(R.string.ef_selected), imageSize)
+                    : String.format(getString(R.string.ef_selected_with_limit), imageSize, config.getLimit());
+
+            final Snackbar snackBar = getSnackbarLazy();
+            snackBar.setText(snackBarMessage);
+            snackBar.setAction(R.string.ef_done, new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onDone();
+                }
+            });
+            if (imageSize > 0) {
+                if (!snackBar.isShown()) {
+                    snackBar.show();
+                }
+            } else {
+                snackBar.dismiss();
+            }
+        } else {
+            // noop
+        }
+    }
+
+    public void updateActionButtons() {
+
+        if (mDoneButton != null) {
+            if (config.getMode() == ImagePicker.MODE_MULTIPLE) {
+
+                int imageSize = imageAdapter.getSelectedImages().size();
+                if (imageSize > 0) {
+                    mDoneButton.setVisible(true);
+                } else {
+                    mDoneButton.setVisible(false);
+                }
+
+            } else {
+                // noop
+            }
+        }
+    }
+
+    @NonNull
+    private Snackbar getSnackbarLazy() {
+        if (selectionSnackBar == null) {
+            selectionSnackBar = Snackbar.make(mainLayout, "", Snackbar.LENGTH_INDEFINITE);
+        }
+        return selectionSnackBar;
     }
 
     /**
@@ -350,6 +398,7 @@ public class ImagePickerActivity extends AppCompatActivity
         setItemDecoration(imageColumns);
         recyclerView.setAdapter(imageAdapter);
         updateTitle();
+        updateActionButtons();
     }
 
     /**
@@ -370,6 +419,7 @@ public class ImagePickerActivity extends AppCompatActivity
             recyclerView.getLayoutManager().onRestoreInstanceState(foldersState);
         }
         updateTitle();
+        updateActionButtons();
     }
 
     /**
@@ -455,11 +505,18 @@ public class ImagePickerActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.image_picker_menu_main, menu);
 
-        MenuItem shareItem = menu.findItem(R.id.menu_other);
+        mShareItem = menu.findItem(R.id.menu_other);
+        MenuItem menuCamera = menu.findItem(R.id.menu_camera);
+        if (menuCamera != null) {
+            menuCamera.setVisible(config.isShowCamera());
+        }
+
+        mDoneButton = menu.findItem(R.id.menu_done);
+        mDoneButton.setVisible(false);
 
         if (config.isUseExternalPickers()) {
             MediaActionProvider myShareActionProvider =
-                    (MediaActionProvider) MenuItemCompat.getActionProvider(shareItem);
+                    (MediaActionProvider) MenuItemCompat.getActionProvider(mShareItem);
             if (myShareActionProvider != null) {
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -477,28 +534,11 @@ public class ImagePickerActivity extends AppCompatActivity
                 });
             }
         } else {
-            shareItem.setVisible(false);
+            mShareItem.setVisible(false);
         }
 
+        updateActionButtons();
         return true;
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        MenuItem menuCamera = menu.findItem(R.id.menu_camera);
-        if (menuCamera != null) {
-            menuCamera.setVisible(config.isShowCamera());
-        }
-
-        MenuItem menuDone = menu.findItem(R.id.menu_done);
-        if (menuDone != null) {
-            menuDone.setVisible(!isDisplayingFolderView() && !imageAdapter.getSelectedImages().isEmpty());
-
-            if (config.getMode() == MODE_SINGLE && config.isReturnAfterFirst()) {
-                menuDone.setVisible(false);
-            }
-        }
-        return super.onPrepareOptionsMenu(menu);
     }
 
     /**

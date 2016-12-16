@@ -79,6 +79,13 @@ public class ImagePickerAdapter extends RecyclerView.Adapter<ImagePickerAdapter.
         return images.get(position);
     }
 
+    public void clearSelectedImages() {
+        if (selectedImages != null && selectedImages.size() > 0) {
+            selectedImages.clear();
+            notifyDataSetChanged();
+        }
+    }
+
     public List<Image> getSelectedImages() {
         return selectedImages;
     }

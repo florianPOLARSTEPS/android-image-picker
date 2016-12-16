@@ -13,4 +13,7 @@
         <attr name="ef_matProg_linearProgress" format="boolean"/>
     </declare-styleable>
 
+    <attr name="ef_camera_icon" format="reference"/>
+    <attr name="ef_overflow_icon" format="reference"/>
+    <attr name="ef_done_icon" format="reference"/>
 </resources>

@@ -14,6 +14,10 @@
 
         <item name="android:itemTextAppearance">@style/ef_AppTheme.ItemTextStyle</item>
 
+        <item name="ef_camera_icon">@drawable/ic_camera_white</item>
+        <item name="ef_done_icon">@drawable/ic_done_white</item>
+        <item name="ef_overflow_icon">@drawable/ic_attachment_white</item>
+
     </style>
 
     <style name="ef_CustomToolbarTheme" parent="Base.ThemeOverlay.AppCompat.ActionBar">

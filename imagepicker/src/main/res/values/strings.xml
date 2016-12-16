@@ -3,7 +3,7 @@
     <string name="ef_permission_write_external_rationale">Allow access external storage to select images</string>
 
     <string name="ef_ok">OK</string>
-    <string name="ef_done">DONE</string>
+    <string name="ef_done">done</string>
     <string name="ef_camera">CAMERA</string>
 
     <string name="ef_title_folder">Folder</string>
@@ -24,6 +24,7 @@
 
     <!--Config-->
     <string name="ef_image_directory" translatable="false">Camera</string>
-    <string name="other">Other</string>
+    <string name="ef_other">Other</string>
+    <string name="ef_clear">Clear</string>
 
 </resources>
