@@ -33,8 +33,84 @@ public class MainActivity extends AppCompatActivity {
     private static final int RC_CAMERA = 3000;
 
     private TextView textView;
+    Action1<List<Image>> action = new Action1<List<Image>>() {
+        @Override
+        public void call(List<Image> images) {
+            printImages(images);
+        }
+    };
     private ArrayList<Image> images = new ArrayList<>();
     private CameraModule cameraModule;
+
+    private void captureImage() {
+        startActivityForResult(
+                getCameraModule().getCameraIntent(MainActivity.this), RC_CAMERA);
+    }
+
+    // Recommended builder
+    public void start() {
+        boolean returnAfterCapture = ((Switch) findViewById(R.id.ef_switch_return_after_capture)).isChecked();
+        boolean isSingleMode = ((Switch) findViewById(R.id.ef_switch_single)).isChecked();
+
+        ImagePicker imagePicker = ImagePicker.create(this)
+                .returnAfterFirst(returnAfterCapture) // set whether pick action or camera action should return immediate result or not. Only works in single mode for image picker
+                .folderMode(true) // set folder mode (false by default)
+                .folderTitle("Folder") // folder selection title
+                .imageTitle("Tap to select"); // image selection title
+
+        if (isSingleMode) {
+            imagePicker.single();
+        } else {
+            imagePicker.multi(); // multi mode (default mode)
+        }
+
+        imagePicker.limit(10) // max images can be selected (99 by default)
+                .useExternalPickers(true)
+                .showCamera(true) // show camera or not (true by default)
+                .imageDirectory("Camera")   // captured image directory name ("Camera" folder by default)
+                .origin(images) // original selected images, used in multi mode
+                .start(RC_CODE_PICKER); // start image picker activity with request code
+    }
+
+    // Traditional intent
+    public void startWithIntent() {
+        Intent intent = new Intent(this, ImagePickerActivity.class);
+        intent.putExtra(ImagePicker.EXTRA_FOLDER_MODE, true);
+        intent.putExtra(ImagePicker.EXTRA_MODE, ImagePicker.MODE_MULTIPLE);
+        intent.putExtra(ImagePicker.EXTRA_LIMIT, 10);
+        intent.putExtra(ImagePicker.EXTRA_SHOW_CAMERA, true);
+        intent.putExtra(ImagePicker.EXTRA_SELECTED_IMAGES, images);
+        intent.putExtra(ImagePicker.EXTRA_FOLDER_TITLE, "Album");
+        intent.putExtra(ImagePicker.EXTRA_IMAGE_TITLE, "Tap to select images");
+        intent.putExtra(ImagePicker.EXTRA_IMAGE_DIRECTORY, "Camera");
+
+        /* Will force ImagePicker to single pick */
+        intent.putExtra(ImagePicker.EXTRA_RETURN_AFTER_FIRST, true);
+
+        startActivityForResult(intent, RC_CODE_PICKER);
+    }
+
+    private void printImages(List<Image> images) {
+        if (images == null) return;
+
+        StringBuilder stringBuffer = new StringBuilder();
+        for (int i = 0, l = images.size(); i < l; i++) {
+            stringBuffer.append(images.get(i).getPath()).append("\n");
+        }
+        textView.setText(stringBuffer.toString());
+    }
+
+    private ImmediateCameraModule getCameraModule() {
+        if (cameraModule == null) {
+            cameraModule = new ImmediateCameraModule();
+        }
+        return (ImmediateCameraModule) cameraModule;
+    }
+
+    private Observable<List<Image>> getImagePickerObservable() {
+        return RxImagePicker.getInstance()
+                .start(this, ImagePicker.create(this));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,82 +157,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == RC_CAMERA) {
-            if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                captureImage();
-            }
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
-    private void captureImage() {
-        startActivityForResult(
-                getCameraModule().getCameraIntent(MainActivity.this), RC_CAMERA);
-    }
-
-    private ImmediateCameraModule getCameraModule() {
-        if (cameraModule == null) {
-            cameraModule = new ImmediateCameraModule();
-        }
-        return (ImmediateCameraModule) cameraModule;
-    }
-
-    Action1<List<Image>> action = new Action1<List<Image>>() {
-        @Override
-        public void call(List<Image> images) {
-            printImages(images);
-        }
-    };
-
-    private Observable<List<Image>> getImagePickerObservable() {
-        return RxImagePicker.getInstance()
-                .start(this, ImagePicker.create(this));
-    }
-
-    // Recommended builder
-    public void start() {
-        boolean returnAfterCapture = ((Switch) findViewById(R.id.ef_switch_return_after_capture)).isChecked();
-        boolean isSingleMode = ((Switch) findViewById(R.id.ef_switch_single)).isChecked();
-
-        ImagePicker imagePicker = ImagePicker.create(this)
-                .returnAfterFirst(returnAfterCapture) // set whether pick action or camera action should return immediate result or not. Only works in single mode for image picker
-                .folderMode(true) // set folder mode (false by default)
-                .folderTitle("Folder") // folder selection title
-                .imageTitle("Tap to select"); // image selection title
-
-        if (isSingleMode) {
-            imagePicker.single();
-        } else {
-            imagePicker.multi(); // multi mode (default mode)
-        }
-
-        imagePicker.limit(10) // max images can be selected (99 by default)
-                .showCamera(true) // show camera or not (true by default)
-                .imageDirectory("Camera")   // captured image directory name ("Camera" folder by default)
-                .origin(images) // original selected images, used in multi mode
-                .start(RC_CODE_PICKER); // start image picker activity with request code
-    }
-
-    // Traditional intent
-    public void startWithIntent() {
-        Intent intent = new Intent(this, ImagePickerActivity.class);
-        intent.putExtra(ImagePicker.EXTRA_FOLDER_MODE, true);
-        intent.putExtra(ImagePicker.EXTRA_MODE, ImagePicker.MODE_MULTIPLE);
-        intent.putExtra(ImagePicker.EXTRA_LIMIT, 10);
-        intent.putExtra(ImagePicker.EXTRA_SHOW_CAMERA, true);
-        intent.putExtra(ImagePicker.EXTRA_SELECTED_IMAGES, images);
-        intent.putExtra(ImagePicker.EXTRA_FOLDER_TITLE, "Album");
-        intent.putExtra(ImagePicker.EXTRA_IMAGE_TITLE, "Tap to select images");
-        intent.putExtra(ImagePicker.EXTRA_IMAGE_DIRECTORY, "Camera");
-
-        /* Will force ImagePicker to single pick */
-        intent.putExtra(ImagePicker.EXTRA_RETURN_AFTER_FIRST, true);
-
-        startActivityForResult(intent, RC_CODE_PICKER);
-    }
-
-    @Override
     protected void onActivityResult(int requestCode, final int resultCode, Intent data) {
         if (requestCode == RC_CODE_PICKER && resultCode == RESULT_OK && data != null) {
             images = (ArrayList<Image>) ImagePicker.getImages(data);
@@ -175,13 +175,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void printImages(List<Image> images) {
-        if (images == null) return;
-
-        StringBuilder stringBuffer = new StringBuilder();
-        for (int i = 0, l = images.size(); i < l; i++) {
-            stringBuffer.append(images.get(i).getPath()).append("\n");
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == RC_CAMERA) {
+            if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                captureImage();
+            }
         }
-        textView.setText(stringBuffer.toString());
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }

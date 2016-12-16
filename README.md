@@ -73,6 +73,7 @@ ImagePicker.create(this)
 	.showCamera(true) // show camera or not (true by default)
 	.imageDirectory("Camera") // directory name for captured image  ("Camera" folder by default)
 	.origin(images) // original selected images, used in multi mode
+	.useExternalPickers(true) // show external image pickers in the toolbar (Google photos... )
 	.start(REQUEST_CODE_PICKER); // start image picker activity with request code
 ```                
 - Or use traditional Intent
