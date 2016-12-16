@@ -11,18 +11,27 @@ import java.util.ArrayList;
 
 public class ImagePickerConfig implements Parcelable {
 
-    private ArrayList<Image> selectedImages;
+    public static final Creator<ImagePickerConfig> CREATOR = new Creator<ImagePickerConfig>() {
+        @Override
+        public ImagePickerConfig createFromParcel(Parcel source) {
+            return new ImagePickerConfig(source);
+        }
 
+        @Override
+        public ImagePickerConfig[] newArray(int size) {
+            return new ImagePickerConfig[size];
+        }
+    };
+    private ArrayList<Image> selectedImages;
     private String folderTitle;
     private String imageTitle;
     private String imageDirectory;
-
     private int mode;
     private int limit;
-
     private boolean folderMode;
     private boolean showCamera;
     private boolean returnAfterFirst;
+    private boolean useExternalPickers;
 
     public ImagePickerConfig(Context context) {
         this.mode = ImagePicker.MODE_MULTIPLE;
@@ -36,81 +45,102 @@ public class ImagePickerConfig implements Parcelable {
         this.returnAfterFirst = true;
     }
 
-    public boolean isReturnAfterFirst() {
-        return returnAfterFirst;
+    protected ImagePickerConfig(Parcel in) {
+        this.selectedImages = in.createTypedArrayList(Image.CREATOR);
+        this.folderTitle = in.readString();
+        this.imageTitle = in.readString();
+        this.imageDirectory = in.readString();
+        this.mode = in.readInt();
+        this.limit = in.readInt();
+        this.folderMode = in.readByte() != 0;
+        this.showCamera = in.readByte() != 0;
+        this.returnAfterFirst = in.readByte() != 0;
+        this.useExternalPickers = in.readByte() != 0;
     }
 
-    public void setReturnAfterFirst(boolean returnAfterFirst) {
-        this.returnAfterFirst = returnAfterFirst;
+    public boolean isReturnAfterFirst() {
+        return returnAfterFirst;
     }
 
     public int getMode() {
         return mode;
     }
 
-    public void setMode(int mode) {
-        this.mode = mode;
-    }
-
     public int getLimit() {
         return limit;
-    }
-
-    public void setLimit(int limit) {
-        this.limit = limit;
     }
 
     public boolean isShowCamera() {
         return showCamera;
     }
 
-    public void setShowCamera(boolean showCamera) {
-        this.showCamera = showCamera;
-    }
-
     public String getFolderTitle() {
         return folderTitle;
-    }
-
-    public void setFolderTitle(String folderTitle) {
-        this.folderTitle = folderTitle;
     }
 
     public String getImageTitle() {
         return imageTitle;
     }
 
-    public void setImageTitle(String imageTitle) {
-        this.imageTitle = imageTitle;
-    }
-
     public ArrayList<Image> getSelectedImages() {
         return selectedImages;
-    }
-
-    public void setSelectedImages(ArrayList<Image> selectedImages) {
-        this.selectedImages = selectedImages;
     }
 
     public boolean isFolderMode() {
         return folderMode;
     }
 
-    public void setFolderMode(boolean folderMode) {
-        this.folderMode = folderMode;
-    }
-
     public String getImageDirectory() {
         return imageDirectory;
     }
 
-    public void setImageDirectory(String imageDirectory) {
-        this.imageDirectory = imageDirectory;
+    public boolean isUseExternalPickers() {
+        return useExternalPickers;
+    }
+
+    public void setReturnAfterFirst(boolean returnAfterFirst) {
+        this.returnAfterFirst = returnAfterFirst;
+    }
+
+    public void setMode(int mode) {
+        this.mode = mode;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+
+    public void setShowCamera(boolean showCamera) {
+        this.showCamera = showCamera;
+    }
+
+    public void setFolderTitle(String folderTitle) {
+        this.folderTitle = folderTitle;
+    }
+
+    public void setImageTitle(String imageTitle) {
+        this.imageTitle = imageTitle;
+    }
+
+    public void setSelectedImages(ArrayList<Image> selectedImages) {
+        this.selectedImages = selectedImages;
+    }
+
+    public void setFolderMode(boolean folderMode) {
+        this.folderMode = folderMode;
     }
 
     /* --------------------------------------------------- */
     /* > Parcelable */
     /* --------------------------------------------------- */
+
+    public void setImageDirectory(String imageDirectory) {
+        this.imageDirectory = imageDirectory;
+    }
+
+    public void setUseExternalPickers(boolean useExternalPickers) {
+        this.useExternalPickers = useExternalPickers;
+    }
 
     @Override
     public int describeContents() {
@@ -128,29 +158,6 @@ public class ImagePickerConfig implements Parcelable {
         dest.writeByte(this.folderMode ? (byte) 1 : (byte) 0);
         dest.writeByte(this.showCamera ? (byte) 1 : (byte) 0);
         dest.writeByte(this.returnAfterFirst ? (byte) 1 : (byte) 0);
+        dest.writeByte(this.useExternalPickers ? (byte) 1 : (byte) 0);
     }
-
-    protected ImagePickerConfig(Parcel in) {
-        this.selectedImages = in.createTypedArrayList(Image.CREATOR);
-        this.folderTitle = in.readString();
-        this.imageTitle = in.readString();
-        this.imageDirectory = in.readString();
-        this.mode = in.readInt();
-        this.limit = in.readInt();
-        this.folderMode = in.readByte() != 0;
-        this.showCamera = in.readByte() != 0;
-        this.returnAfterFirst = in.readByte() != 0;
-    }
-
-    public static final Creator<ImagePickerConfig> CREATOR = new Creator<ImagePickerConfig>() {
-        @Override
-        public ImagePickerConfig createFromParcel(Parcel source) {
-            return new ImagePickerConfig(source);
-        }
-
-        @Override
-        public ImagePickerConfig[] newArray(int size) {
-            return new ImagePickerConfig[size];
-        }
-    };
 }

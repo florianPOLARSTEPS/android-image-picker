@@ -1,6 +1,11 @@
 ## ImagePicker
 A simple library to select images from the gallery and camera.
 
+This is a port of the popular android-image-picker ([original](https://github.com/esafirm/android-image-picker/)) that uses [fresco](https://github.com/facebook/fresco) for image loading.
+Additionally it has the capability to open external pickers to choose from Google Photos or other galleries. This is a **WORK IN PROGRESS**
+
+
+
 ## Screenshot
 
 <img src="https://raw.githubusercontent.com/esafirm/android-image-picker/master/art/ss.gif" height="460" width="284"/>
@@ -29,7 +34,21 @@ dependencies {
 
 change `x.y.z` to version in the [release page](https://github.com/esafirm/android-image-picker/releases)
 
+
 ## Usage
+
+First of all you need to also explicitly add the `PickerActivity` to your Manifest.
+
+```xml
+<activity android:name="com.esafirm.imagepicker.features.ImagePickerActivity"
+            android:theme="@style/YourStyle"/>
+```
+
+This gives you the ability to apply your own styling to it. Make sure to set the following to `YourStyle`.
+```xml
+<item name="windowActionBar">false</item>
+```
+
 
 For full example, please refer to `sample`
 

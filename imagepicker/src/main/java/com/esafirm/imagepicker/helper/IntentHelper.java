@@ -15,6 +15,7 @@ import static com.esafirm.imagepicker.features.ImagePicker.EXTRA_MODE;
 import static com.esafirm.imagepicker.features.ImagePicker.EXTRA_RETURN_AFTER_FIRST;
 import static com.esafirm.imagepicker.features.ImagePicker.EXTRA_SELECTED_IMAGES;
 import static com.esafirm.imagepicker.features.ImagePicker.EXTRA_SHOW_CAMERA;
+import static com.esafirm.imagepicker.features.ImagePicker.EXTRA_USE_EXTERNAL_PICKERS;
 import static com.esafirm.imagepicker.features.ImagePicker.MAX_LIMIT;
 import static com.esafirm.imagepicker.features.ImagePicker.MODE_MULTIPLE;
 
@@ -31,6 +32,7 @@ public class IntentHelper {
         config.setFolderMode(intent.getBooleanExtra(EXTRA_FOLDER_MODE, true));
         config.setImageDirectory(intent.getStringExtra(EXTRA_IMAGE_DIRECTORY));
         config.setReturnAfterFirst(intent.getBooleanExtra(EXTRA_RETURN_AFTER_FIRST, false));
+        config.setUseExternalPickers(intent.getBooleanExtra(EXTRA_USE_EXTERNAL_PICKERS, true));
         return config;
     }
 }

@@ -21,6 +21,7 @@ public abstract class ImagePicker {
     public static final String EXTRA_IMAGE_TITLE = "imageTitle";
     public static final String EXTRA_IMAGE_DIRECTORY = "imageDirectory";
     public static final String EXTRA_RETURN_AFTER_FIRST = "returnAfterFirst";
+    public static final String EXTRA_USE_EXTERNAL_PICKERS = "useExternalPickers";
 
     public static final int MAX_LIMIT = 99;
 
@@ -115,6 +116,11 @@ public abstract class ImagePicker {
 
     public ImagePicker imageTitle(String title) {
         config.setImageTitle(title);
+        return this;
+    }
+
+    public ImagePicker useExternalPickers(boolean use) {
+        config.setUseExternalPickers(use);
         return this;
     }
 
