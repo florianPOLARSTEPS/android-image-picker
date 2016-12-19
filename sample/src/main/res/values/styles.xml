@@ -6,11 +6,15 @@
         <item name="colorPrimary">@color/ef_colorPrimary</item>
         <item name="colorPrimaryDark">@color/ef_colorPrimaryDark</item>
         <item name="colorAccent">@color/ef_colorAccent</item>
+
     </style>
+
 
     <style name="AppTheme.Picker" parent="ef_AppTheme.Picker">
         <item name="colorPrimary">@color/ef_colorPrimary</item>
         <item name="colorPrimaryDark">@color/ef_colorPrimaryDark</item>
         <item name="colorAccent">@color/ef_colorAccent</item>
     </style>
+
+
 </resources>

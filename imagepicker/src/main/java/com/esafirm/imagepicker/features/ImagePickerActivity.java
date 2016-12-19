@@ -400,6 +400,7 @@ public class ImagePickerActivity extends AppCompatActivity
         setItemDecoration(imageColumns);
         recyclerView.setAdapter(imageAdapter);
         updateTitle();
+        updateSelectionIndicator();
         updateActionButtons();
     }
 
@@ -421,6 +422,7 @@ public class ImagePickerActivity extends AppCompatActivity
             recyclerView.getLayoutManager().onRestoreInstanceState(foldersState);
         }
         updateTitle();
+        updateSelectionIndicator();
         updateActionButtons();
     }
 
@@ -528,12 +530,19 @@ public class ImagePickerActivity extends AppCompatActivity
                     intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                 }
                 myShareActionProvider.setIntent(intent);
-                myShareActionProvider.setOnIntentClickListener(new MediaActionProvider.OnIntentClickListener() {
-                    @Override
-                    public void onIntentClick(Intent intent) {
-                        startActivityForResult(intent, RC_START_EXTERNAL_PICKER);
-                    }
-                });
+
+                if (myShareActionProvider.getItemCount() > 0) {
+                    mShareItem.setVisible(true);
+                    myShareActionProvider.setOnIntentClickListener(new MediaActionProvider.OnIntentClickListener() {
+                        @Override
+                        public void onIntentClick(Intent intent) {
+                            startActivityForResult(intent, RC_START_EXTERNAL_PICKER);
+                        }
+                    });
+                } else {
+                    mShareItem.setVisible(false);
+                }
+
             }
         } else {
             mShareItem.setVisible(false);

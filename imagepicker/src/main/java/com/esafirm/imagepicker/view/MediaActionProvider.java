@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 import android.support.v4.view.ActionProvider;
 import android.view.MenuItem;
 import android.view.SubMenu;
@@ -36,6 +38,22 @@ public class MediaActionProvider extends ActionProvider implements MenuItem.OnMe
     public MediaActionProvider(Context context) {
         super(context);
         mContext = context;
+    }
+
+    @Nullable
+    public Drawable getFirstIcon() {
+        PackageManager packageManager = mContext.getPackageManager();
+        for (ResolveInfo mResolveInfo : mResolveInfos) {
+            if (!"com.android.documentsui".equals(mResolveInfo.activityInfo.packageName)) {
+                return mResolveInfo.loadIcon(packageManager);
+            }
+        }
+
+        return null;
+    }
+
+    public int getItemCount() {
+        return mResolveInfos != null ? mResolveInfos.size() : 0;
     }
 
     public void setIntent(Intent shareIntent) {
