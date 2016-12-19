@@ -13,6 +13,8 @@ import com.esafirm.imagepicker.model.Image;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,6 +116,12 @@ public class ImageLoader {
             List<Folder> folders = null;
             if (folderMap != null) {
                 folders = new ArrayList<>(folderMap.values());
+                Collections.sort(folders, new Comparator<Folder>() {
+                    @Override
+                    public int compare(Folder folder, Folder t1) {
+                        return folder.getFolderName().compareTo(t1.getFolderName());
+                    }
+                });
             }
 
             listener.onImageLoaded(temp, folders);
