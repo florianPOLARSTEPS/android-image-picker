@@ -28,7 +28,9 @@ public class ImageLoader {
             MediaStore.Images.Media._ID,
             MediaStore.Images.Media.DISPLAY_NAME,
             MediaStore.Images.Media.DATA,
-            MediaStore.Images.Media.BUCKET_DISPLAY_NAME
+            MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
+            MediaStore.Images.Media.DATE_TAKEN,
+            MediaStore.Images.Media.DATE_ADDED
     };
     private Context context;
     private ExecutorService executorService;
@@ -72,7 +74,7 @@ public class ImageLoader {
         @Override
         public void run() {
             Cursor cursor = context.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection,
-                    null, null, MediaStore.Images.Media.DATE_ADDED);
+                    null, null, MediaStore.Images.Media.DATE_TAKEN + " DESC, " + MediaStore.Images.Media.DATE_ADDED + " DESC");
 
             if (cursor == null) {
                 listener.onFailed(new NullPointerException());
@@ -85,7 +87,7 @@ public class ImageLoader {
                 folderMap = new HashMap<>();
             }
 
-            if (cursor.moveToLast()) {
+            if (cursor.moveToFirst()) {
                 do {
                     long id = cursor.getLong(cursor.getColumnIndex(projection[0]));
                     String name = cursor.getString(cursor.getColumnIndex(projection[1]));
@@ -107,8 +109,7 @@ public class ImageLoader {
                             folder.getImages().add(image);
                         }
                     }
-
-                } while (cursor.moveToPrevious());
+                } while (cursor.moveToNext());
             }
             cursor.close();
 
