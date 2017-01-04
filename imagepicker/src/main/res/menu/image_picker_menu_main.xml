@@ -12,7 +12,6 @@
         android:id="@+id/menu_other"
         android:icon="?attr/ef_overflow_icon"
         android:title="@string/ef_other"
-        app:actionProviderClass="com.esafirm.imagepicker.view.MediaActionProvider"
         app:showAsAction="always"/>
     <item
         android:id="@+id/menu_done"

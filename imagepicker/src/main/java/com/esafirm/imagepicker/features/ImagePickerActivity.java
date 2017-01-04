@@ -520,30 +520,30 @@ public class ImagePickerActivity extends AppCompatActivity
 
         if (config.isUseExternalPickers()) {
             MediaActionProvider myShareActionProvider =
-                    (MediaActionProvider) MenuItemCompat.getActionProvider(mShareItem);
-            if (myShareActionProvider != null) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                intent.setType("image/*");
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && config.getMode() == MODE_MULTIPLE) {
-                    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                }
-                myShareActionProvider.setIntent(intent);
-
-                if (myShareActionProvider.getItemCount() > 0) {
-                    mShareItem.setVisible(true);
-                    myShareActionProvider.setOnIntentClickListener(new MediaActionProvider.OnIntentClickListener() {
-                        @Override
-                        public void onIntentClick(Intent intent) {
-                            startActivityForResult(intent, RC_START_EXTERNAL_PICKER);
-                        }
-                    });
-                } else {
-                    mShareItem.setVisible(false);
-                }
-
+                    new MediaActionProvider(this);
+            MenuItemCompat.setActionProvider(mShareItem, myShareActionProvider);
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.setType("image/*");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && config.getMode() == MODE_MULTIPLE) {
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
             }
+            myShareActionProvider.setIntent(intent);
+
+            if (myShareActionProvider.getItemCount() > 0) {
+                mShareItem.setVisible(true);
+                myShareActionProvider.setOnIntentClickListener(new MediaActionProvider.OnIntentClickListener() {
+                    @Override
+                    public void onIntentClick(Intent intent) {
+                        startActivityForResult(intent, RC_START_EXTERNAL_PICKER);
+                    }
+                });
+            } else {
+                mShareItem.setVisible(false);
+            }
+
+
         } else {
             mShareItem.setVisible(false);
         }
