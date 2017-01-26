@@ -95,19 +95,26 @@ public class ImageLoader {
                     String bucket = cursor.getString(cursor.getColumnIndex(projection[3]));
                     Uri contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
 
-                    File file = new File(path);
-                    if (file.exists()) {
-                        Image image = new Image(id, name, path, contentUri, false);
-                        temp.add(image);
+                    if (path == null) {
+                        continue;
+                    }
+                    try {
+                        File file = new File(path);
+                        if (file.exists()) {
+                            Image image = new Image(id, name, path, contentUri, false);
+                            temp.add(image);
 
-                        if (folderMap != null) {
-                            Folder folder = folderMap.get(bucket);
-                            if (folder == null) {
-                                folder = new Folder(bucket);
-                                folderMap.put(bucket, folder);
+                            if (folderMap != null) {
+                                Folder folder = folderMap.get(bucket);
+                                if (folder == null) {
+                                    folder = new Folder(bucket);
+                                    folderMap.put(bucket, folder);
+                                }
+                                folder.getImages().add(image);
                             }
-                            folder.getImages().add(image);
                         }
+                    } catch (Exception e) {
+                        Log.e(TAG, "error accessing file: ", e);
                     }
                 } while (cursor.moveToNext());
             }
