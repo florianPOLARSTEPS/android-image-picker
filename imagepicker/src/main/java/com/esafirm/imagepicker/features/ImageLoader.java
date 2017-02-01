@@ -3,15 +3,18 @@ package com.esafirm.imagepicker.features;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
 
 import com.esafirm.imagepicker.features.common.ImageLoaderListener;
+import com.esafirm.imagepicker.model.FileSystemData;
 import com.esafirm.imagepicker.model.Folder;
 import com.esafirm.imagepicker.model.Image;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -54,6 +57,22 @@ public class ImageLoader {
         }
     }
 
+    private void updateWithExifData(File file, Image image) {
+
+        ExifInterface exifInterface;
+        try {
+            exifInterface = new ExifInterface(file.toString());
+            float[] latLng = new float[2];
+            boolean hasLatLng = exifInterface.getLatLong(latLng);
+            if (hasLatLng) {
+                image.setLatLng(latLng);
+            }
+        } catch (IOException e) {
+            // noop
+        }
+
+    }
+
     private ExecutorService getExecutorService() {
         if (executorService == null) {
             executorService = Executors.newSingleThreadExecutor();
@@ -87,6 +106,9 @@ public class ImageLoader {
                 folderMap = new HashMap<>();
             }
 
+            long imageCount = cursor.getCount();
+            long geoInformationCount = 0;
+
             if (cursor.moveToFirst()) {
                 do {
                     long id = cursor.getLong(cursor.getColumnIndex(projection[0]));
@@ -102,6 +124,13 @@ public class ImageLoader {
                         File file = new File(path);
                         if (file.exists()) {
                             Image image = new Image(id, name, path, contentUri, false);
+                            updateWithExifData(file, image);
+
+                            if (image.hasLatLng()) {
+                                Log.d(TAG, String.format("geocoordinates: %f : %f", image.getLatLng()[0], image.getLatLng()[1]));
+                                geoInformationCount++;
+                            }
+
                             temp.add(image);
 
                             if (folderMap != null) {
@@ -132,7 +161,13 @@ public class ImageLoader {
                 });
             }
 
-            listener.onImageLoaded(temp, folders);
+            Log.d(TAG, String.format("%d / %d images with geo coordinates", geoInformationCount, imageCount));
+
+            FileSystemData mFileSystemData = new FileSystemData();
+            mFileSystemData.setNumImages(imageCount);
+            mFileSystemData.setNumImagesWithGeoTags(geoInformationCount);
+
+            listener.onImageLoaded(temp, folders, mFileSystemData);
         }
     }
 
@@ -171,6 +206,7 @@ public class ImageLoader {
                         File file = new File(path);
                         if (file.exists()) {
                             Image image = new Image(id, name, path, contentUri, false);
+                            updateWithExifData(file, image);
                             temp.add(image);
                         }
                     }
@@ -184,8 +220,7 @@ public class ImageLoader {
                 }
             }
 
-
-            listener.onImageLoaded(temp, null);
+            listener.onImageLoaded(temp, null, null);
         }
     }
 }

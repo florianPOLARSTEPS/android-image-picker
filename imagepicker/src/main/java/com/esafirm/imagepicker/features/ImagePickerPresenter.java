@@ -16,6 +16,7 @@ import com.esafirm.imagepicker.features.camera.DefaultCameraModule;
 import com.esafirm.imagepicker.features.camera.OnImageReadyListener;
 import com.esafirm.imagepicker.features.common.BasePresenter;
 import com.esafirm.imagepicker.features.common.ImageLoaderListener;
+import com.esafirm.imagepicker.model.FileSystemData;
 import com.esafirm.imagepicker.model.Folder;
 import com.esafirm.imagepicker.model.Image;
 
@@ -25,6 +26,7 @@ import java.util.List;
 
 public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
 
+    public FileSystemData fileSystemData;
     private ImageLoader imageLoader;
     private CameraModule cameraModule = new DefaultCameraModule();
     private Handler handler = new Handler(Looper.getMainLooper());
@@ -42,8 +44,13 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
 
         getView().showLoading(true);
         imageLoader.loadDeviceImages(isFolderMode, new ImageLoaderListener() {
+
+
             @Override
-            public void onImageLoaded(final List<Image> images, final List<Folder> folders) {
+            public void onImageLoaded(final List<Image> images, final List<Folder> folders, FileSystemData mFileSystemData) {
+                if (mFileSystemData != null) {
+                    fileSystemData = mFileSystemData;
+                }
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -94,7 +101,7 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
                     i--;
                 }
             }
-            getView().finishPickImages(selectedImages);
+            getView().finishPickImages(selectedImages, fileSystemData);
         }
     }
 
@@ -130,8 +137,8 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
         if (images.size() > 0) {
             imageLoader.loadExternalDeviceImages(images, new ImageLoaderListener() {
                 @Override
-                public void onImageLoaded(List<Image> images, List<Folder> folders) {
-                    getView().finishPickImages(images);
+                public void onImageLoaded(List<Image> images, List<Folder> folders, FileSystemData mFileSystemData) {
+                    getView().finishPickImages(images, fileSystemData);
                 }
 
                 @Override
@@ -149,7 +156,7 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
             @Override
             public void onImageReady(List<Image> images) {
                 if (config.isReturnAfterFirst()) {
-                    getView().finishPickImages(images);
+                    getView().finishPickImages(images, fileSystemData);
                 } else {
                     getView().showCapturedImage();
                 }

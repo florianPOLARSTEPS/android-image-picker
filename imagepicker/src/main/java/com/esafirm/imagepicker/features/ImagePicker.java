@@ -3,8 +3,10 @@ package com.esafirm.imagepicker.features;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
+import com.esafirm.imagepicker.model.FileSystemData;
 import com.esafirm.imagepicker.model.Image;
 
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ import java.util.List;
 public abstract class ImagePicker {
 
     public static final String EXTRA_SELECTED_IMAGES = "selectedImages";
+    public static final String EXTRA_FILESYSTEM_DATA = "fileSystemData";
     public static final String EXTRA_LIMIT = "limit";
     public static final String EXTRA_SHOW_CAMERA = "showCamera";
     public static final String EXTRA_MODE = "mode";
@@ -154,5 +157,13 @@ public abstract class ImagePicker {
             return null;
         }
         return intent.getParcelableArrayListExtra(ImagePicker.EXTRA_SELECTED_IMAGES);
+    }
+
+    @Nullable
+    public static FileSystemData getFileSystemData(Intent intent) {
+        if (intent == null) {
+            return null;
+        }
+        return intent.getParcelableExtra(ImagePicker.EXTRA_FILESYSTEM_DATA);
     }
 }

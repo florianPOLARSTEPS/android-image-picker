@@ -9,7 +9,8 @@ import java.io.File;
 
 public class Image implements Parcelable {
 
-    public static final Creator<Image> CREATOR = new Creator<Image>() {
+
+    public static final Parcelable.Creator<Image> CREATOR = new Parcelable.Creator<Image>() {
         @Override
         public Image createFromParcel(Parcel source) {
             return new Image(source);
@@ -25,6 +26,8 @@ public class Image implements Parcelable {
     private String path;
     private Uri uri;
     private boolean isSelected;
+    private double[] latLng;
+
 
     public Image(long id, String name, String path, Uri uri, boolean isSelected) {
         this.id = id;
@@ -40,6 +43,11 @@ public class Image implements Parcelable {
         this.path = in.readString();
         this.uri = in.readParcelable(Uri.class.getClassLoader());
         this.isSelected = in.readByte() != 0;
+        this.latLng = in.createDoubleArray();
+    }
+
+    public boolean hasLatLng() {
+        return this.latLng != null;
     }
 
     public long getId() {
@@ -68,6 +76,10 @@ public class Image implements Parcelable {
         return isSelected;
     }
 
+    public double[] getLatLng() {
+        return latLng;
+    }
+
     public void setId(long id) {
         this.id = id;
     }
@@ -88,6 +100,10 @@ public class Image implements Parcelable {
         isSelected = selected;
     }
 
+    public void setLatLng(float[] latLng) {
+        this.latLng = new double[]{latLng[0], latLng[1]};
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -100,5 +116,6 @@ public class Image implements Parcelable {
         dest.writeString(this.path);
         dest.writeParcelable(this.uri, flags);
         dest.writeByte(this.isSelected ? (byte) 1 : (byte) 0);
+        dest.writeDoubleArray(this.latLng);
     }
 }

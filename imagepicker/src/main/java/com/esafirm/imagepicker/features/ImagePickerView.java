@@ -1,6 +1,7 @@
 package com.esafirm.imagepicker.features;
 
 import com.esafirm.imagepicker.features.common.MvpView;
+import com.esafirm.imagepicker.model.FileSystemData;
 import com.esafirm.imagepicker.model.Folder;
 import com.esafirm.imagepicker.model.Image;
 
@@ -12,5 +13,5 @@ public interface ImagePickerView extends MvpView {
     void showError(Throwable throwable);
     void showEmpty();
     void showCapturedImage();
-    void finishPickImages(List<Image> images);
+    void finishPickImages(List<Image> images, FileSystemData fileSystemData);
 }

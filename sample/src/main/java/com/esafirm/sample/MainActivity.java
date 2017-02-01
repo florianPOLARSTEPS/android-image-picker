@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -17,6 +18,7 @@ import com.esafirm.imagepicker.features.ImagePickerActivity;
 import com.esafirm.imagepicker.features.camera.CameraModule;
 import com.esafirm.imagepicker.features.camera.ImmediateCameraModule;
 import com.esafirm.imagepicker.features.camera.OnImageReadyListener;
+import com.esafirm.imagepicker.model.FileSystemData;
 import com.esafirm.imagepicker.model.Image;
 import com.esafirm.rximagepicker.RxImagePicker;
 import com.facebook.drawee.backends.pipeline.Fresco;
@@ -160,6 +162,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, final int resultCode, Intent data) {
         if (requestCode == RC_CODE_PICKER && resultCode == RESULT_OK && data != null) {
             images = (ArrayList<Image>) ImagePicker.getImages(data);
+            FileSystemData fileSystemData = ImagePicker.getFileSystemData(data);
+            if (fileSystemData != null) {
+                Log.d("FSD", fileSystemData.toString());
+            }
             printImages(images);
             return;
         }

@@ -37,6 +37,7 @@ import com.esafirm.imagepicker.helper.ImagePickerPreferences;
 import com.esafirm.imagepicker.helper.IntentHelper;
 import com.esafirm.imagepicker.listeners.OnFolderClickListener;
 import com.esafirm.imagepicker.listeners.OnImageClickListener;
+import com.esafirm.imagepicker.model.FileSystemData;
 import com.esafirm.imagepicker.model.Folder;
 import com.esafirm.imagepicker.model.Image;
 import com.esafirm.imagepicker.view.GridSpacingItemDecoration;
@@ -46,6 +47,7 @@ import com.esafirm.imagepicker.view.ProgressWheel;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.esafirm.imagepicker.features.ImagePicker.EXTRA_FILESYSTEM_DATA;
 import static com.esafirm.imagepicker.features.ImagePicker.EXTRA_SELECTED_IMAGES;
 import static com.esafirm.imagepicker.features.ImagePicker.MODE_MULTIPLE;
 import static com.esafirm.imagepicker.helper.ImagePickerPreferences.PREF_WRITE_EXTERNAL_STORAGE_REQUESTED;
@@ -692,10 +694,13 @@ public class ImagePickerActivity extends AppCompatActivity
     }
 
     @Override
-    public void finishPickImages(List<Image> images) {
+    public void finishPickImages(List<Image> images, FileSystemData fileSystemData) {
         Intent data = new Intent();
         data.putParcelableArrayListExtra(EXTRA_SELECTED_IMAGES,
                 (ArrayList<? extends Parcelable>) images);
+        if (fileSystemData != null) {
+            data.putExtra(EXTRA_FILESYSTEM_DATA, fileSystemData);
+        }
         setResult(RESULT_OK, data);
         finish();
     }
