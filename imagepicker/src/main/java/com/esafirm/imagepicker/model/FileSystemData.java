@@ -32,6 +32,14 @@ public class FileSystemData implements Parcelable {
         this.numImagesWithGeoTags = in.readLong();
     }
 
+    public long getNumImages() {
+        return numImages;
+    }
+
+    public long getNumImagesWithGeoTags() {
+        return numImagesWithGeoTags;
+    }
+
     public void setNumImages(long numImages) {
         this.numImages = numImages;
     }
