@@ -486,16 +486,20 @@ public class ImagePickerActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        if (observer != null) {
+            getContentResolver().unregisterContentObserver(observer);
+            observer = null;
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (presenter != null) {
             presenter.abortLoad();
             presenter.detachView();
-        }
-
-        if (observer != null) {
-            getContentResolver().unregisterContentObserver(observer);
-            observer = null;
         }
 
         if (handler != null) {
