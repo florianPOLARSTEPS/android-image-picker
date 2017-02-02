@@ -76,7 +76,6 @@ public class ImagePickerActivity extends AppCompatActivity
     private ImagePickerConfig config;
     private FolderPickerAdapter folderAdapter;
 
-    private Handler handler;
     private ContentObserver observer;
 
     private Parcelable foldersState;
@@ -472,26 +471,11 @@ public class ImagePickerActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-
-        if (handler == null) {
-            handler = new Handler();
-        }
-        observer = new ContentObserver(new Handler()) {
-            @Override
-            public void onChange(boolean selfChange) {
-                getData();
-            }
-        };
-        getContentResolver().registerContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, false, observer);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (observer != null) {
-            getContentResolver().unregisterContentObserver(observer);
-            observer = null;
-        }
     }
 
     @Override
@@ -502,10 +486,6 @@ public class ImagePickerActivity extends AppCompatActivity
             presenter.detachView();
         }
 
-        if (handler != null) {
-            handler.removeCallbacksAndMessages(null);
-            handler = null;
-        }
     }
 
     /**
@@ -615,9 +595,28 @@ public class ImagePickerActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        if (observer != null) {
+            getContentResolver().unregisterContentObserver(observer);
+            observer = null;
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         getDataWithPermission();
+
+        if (observer == null) {
+            observer = new ContentObserver(new Handler()) {
+                @Override
+                public void onChange(boolean selfChange) {
+                    getData();
+                }
+            };
+            getContentResolver().registerContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, false, observer);
+        }
     }
 
     /**
