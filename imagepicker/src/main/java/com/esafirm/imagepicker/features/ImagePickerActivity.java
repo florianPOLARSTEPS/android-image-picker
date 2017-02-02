@@ -597,10 +597,10 @@ public class ImagePickerActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
-        if (observer != null) {
-            getContentResolver().unregisterContentObserver(observer);
-            observer = null;
-        }
+//        if (observer != null) {
+//            getContentResolver().unregisterContentObserver(observer);
+//            observer = null;
+//        }
     }
 
     @Override
@@ -608,15 +608,15 @@ public class ImagePickerActivity extends AppCompatActivity
         super.onResume();
         getDataWithPermission();
 
-        if (observer == null) {
-            observer = new ContentObserver(new Handler()) {
-                @Override
-                public void onChange(boolean selfChange) {
-                    getData();
-                }
-            };
-            getContentResolver().registerContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, false, observer);
-        }
+//        if (observer == null) {
+//            observer = new ContentObserver(new Handler()) {
+//                @Override
+//                public void onChange(boolean selfChange) {
+//                    getData();
+//                }
+//            };
+//            getContentResolver().registerContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, false, observer);
+//        }
     }
 
     /**
