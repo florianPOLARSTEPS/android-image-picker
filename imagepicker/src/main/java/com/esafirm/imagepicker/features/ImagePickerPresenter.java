@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.widget.Toast;
 
 import com.esafirm.imagepicker.R;
@@ -137,13 +138,24 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
         if (images.size() > 0) {
             imageLoader.loadExternalDeviceImages(images, new ImageLoaderListener() {
                 @Override
-                public void onImageLoaded(List<Image> images, List<Folder> folders, FileSystemData mFileSystemData) {
-                    getView().finishPickImages(images, fileSystemData);
+                public void onImageLoaded(final List<Image> images, List<Folder> folders, FileSystemData mFileSystemData) {
+                    if (getView() != null) {
+                        getView().finishPickImages(images, fileSystemData);
+                    } else {
+                        new Handler(Looper.getMainLooper()) {
+                            @Override
+                            public void handleMessage(Message msg) {
+                                if (getView() != null) {
+                                    getView().finishPickImages(images, fileSystemData);
+                                }
+                            }
+                        }.sendEmptyMessageDelayed(0, 1000);
+                    }
                 }
 
                 @Override
                 public void onFailed(Throwable throwable) {
-                    //TODO: handle error
+
                 }
             });
         }
