@@ -11,7 +11,8 @@ import java.util.ArrayList;
 
 public class ImagePickerConfig implements Parcelable {
 
-    public static final Creator<ImagePickerConfig> CREATOR = new Creator<ImagePickerConfig>() {
+
+    public static final Parcelable.Creator<ImagePickerConfig> CREATOR = new Parcelable.Creator<ImagePickerConfig>() {
         @Override
         public ImagePickerConfig createFromParcel(Parcel source) {
             return new ImagePickerConfig(source);
@@ -32,6 +33,7 @@ public class ImagePickerConfig implements Parcelable {
     private boolean showCamera;
     private boolean returnAfterFirst;
     private boolean useExternalPickers;
+    private boolean fetchLocationData;
 
     public ImagePickerConfig(Context context) {
         this.mode = ImagePicker.MODE_MULTIPLE;
@@ -43,6 +45,7 @@ public class ImagePickerConfig implements Parcelable {
         this.folderMode = false;
         this.imageDirectory = context.getString(R.string.ef_image_directory);
         this.returnAfterFirst = true;
+        this.fetchLocationData = false;
     }
 
     protected ImagePickerConfig(Parcel in) {
@@ -56,6 +59,7 @@ public class ImagePickerConfig implements Parcelable {
         this.showCamera = in.readByte() != 0;
         this.returnAfterFirst = in.readByte() != 0;
         this.useExternalPickers = in.readByte() != 0;
+        this.fetchLocationData = in.readByte() != 0;
     }
 
     public boolean isReturnAfterFirst() {
@@ -98,6 +102,10 @@ public class ImagePickerConfig implements Parcelable {
         return useExternalPickers;
     }
 
+    public boolean isFetchLocationData() {
+        return fetchLocationData;
+    }
+
     public void setReturnAfterFirst(boolean returnAfterFirst) {
         this.returnAfterFirst = returnAfterFirst;
     }
@@ -130,16 +138,16 @@ public class ImagePickerConfig implements Parcelable {
         this.folderMode = folderMode;
     }
 
-    /* --------------------------------------------------- */
-    /* > Parcelable */
-    /* --------------------------------------------------- */
-
     public void setImageDirectory(String imageDirectory) {
         this.imageDirectory = imageDirectory;
     }
 
     public void setUseExternalPickers(boolean useExternalPickers) {
         this.useExternalPickers = useExternalPickers;
+    }
+
+    public void setFetchLocationData(boolean fetchLocationData) {
+        this.fetchLocationData = fetchLocationData;
     }
 
     @Override
@@ -159,5 +167,6 @@ public class ImagePickerConfig implements Parcelable {
         dest.writeByte(this.showCamera ? (byte) 1 : (byte) 0);
         dest.writeByte(this.returnAfterFirst ? (byte) 1 : (byte) 0);
         dest.writeByte(this.useExternalPickers ? (byte) 1 : (byte) 0);
+        dest.writeByte(this.fetchLocationData ? (byte) 1 : (byte) 0);
     }
 }

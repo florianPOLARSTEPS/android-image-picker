@@ -42,12 +42,12 @@ public class ImageLoader {
         this.context = context;
     }
 
-    public void loadDeviceImages(final boolean isFolderMode, final ImageLoaderListener listener) {
-        getExecutorService().execute(new ImageLoadRunnable(isFolderMode, listener));
+    public void loadDeviceImages(final ImagePickerConfig config, final ImageLoaderListener listener) {
+        getExecutorService().execute(new ImageLoadRunnable(config, listener));
     }
 
-    public void loadExternalDeviceImages(List<Uri> uris, final ImageLoaderListener listener) {
-        getExecutorService().execute(new ExternalImageLoadRunnable(uris, listener));
+    public void loadExternalDeviceImages(ImagePickerConfig config, List<Uri> uris, final ImageLoaderListener listener) {
+        getExecutorService().execute(new ExternalImageLoadRunnable(config, uris, listener));
     }
 
     public void abortLoadImages() {
@@ -82,12 +82,12 @@ public class ImageLoader {
 
     private class ImageLoadRunnable implements Runnable {
 
-        private boolean isFolderMode;
+        private final ImagePickerConfig config;
         private ImageLoaderListener listener;
 
-        public ImageLoadRunnable(boolean isFolderMode, ImageLoaderListener listener) {
-            this.isFolderMode = isFolderMode;
+        public ImageLoadRunnable(ImagePickerConfig config, ImageLoaderListener listener) {
             this.listener = listener;
+            this.config = config;
         }
 
         @Override
@@ -102,7 +102,7 @@ public class ImageLoader {
 
             List<Image> temp = new ArrayList<>(cursor.getCount());
             Map<String, Folder> folderMap = null;
-            if (isFolderMode) {
+            if (config.isFolderMode()) {
                 folderMap = new HashMap<>();
             }
 
@@ -124,11 +124,12 @@ public class ImageLoader {
                         File file = new File(path);
                         if (file.exists()) {
                             Image image = new Image(id, name, path, contentUri, false);
-                            updateWithExifData(file, image);
-
-                            if (image.hasLatLng()) {
-                                Log.d(TAG, String.format("geocoordinates: %f : %f", image.getLatLng()[0], image.getLatLng()[1]));
-                                geoInformationCount++;
+                            if (config.isFetchLocationData()) {
+                                updateWithExifData(file, image);
+                                if (image.hasLatLng()) {
+                                    Log.d(TAG, String.format("geocoordinates: %f : %f", image.getLatLng()[0], image.getLatLng()[1]));
+                                    geoInformationCount++;
+                                }
                             }
 
                             temp.add(image);
@@ -161,13 +162,16 @@ public class ImageLoader {
                 });
             }
 
-            Log.d(TAG, String.format("%d / %d images with geo coordinates", geoInformationCount, imageCount));
+            if (config.isFetchLocationData()) {
+                Log.d(TAG, String.format("%d / %d images with geo coordinates", geoInformationCount, imageCount));
+                FileSystemData mFileSystemData = new FileSystemData();
+                mFileSystemData.setNumImages(imageCount);
+                mFileSystemData.setNumImagesWithGeoTags(geoInformationCount);
+                listener.onImageLoaded(temp, folders, mFileSystemData);
+            } else {
+                listener.onImageLoaded(temp, folders, null);
+            }
 
-            FileSystemData mFileSystemData = new FileSystemData();
-            mFileSystemData.setNumImages(imageCount);
-            mFileSystemData.setNumImagesWithGeoTags(geoInformationCount);
-
-            listener.onImageLoaded(temp, folders, mFileSystemData);
         }
     }
 
@@ -175,9 +179,11 @@ public class ImageLoader {
 
         private final ImageLoaderListener listener;
         private final List<Uri> mImageUris;
+        private final ImagePickerConfig config;
 
-        public ExternalImageLoadRunnable(List<Uri> mImageUris, ImageLoaderListener listener) {
+        public ExternalImageLoadRunnable(ImagePickerConfig config, List<Uri> mImageUris, ImageLoaderListener listener) {
             this.listener = listener;
+            this.config = config;
             this.mImageUris = mImageUris;
         }
 
@@ -206,7 +212,9 @@ public class ImageLoader {
                         File file = new File(path);
                         if (file.exists()) {
                             Image image = new Image(id, name, path, contentUri, false);
-                            updateWithExifData(file, image);
+                            if (config.isFetchLocationData()) {
+                                updateWithExifData(file, image);
+                            }
                             temp.add(image);
                         }
                     }

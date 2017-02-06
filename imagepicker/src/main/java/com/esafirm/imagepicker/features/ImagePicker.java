@@ -25,6 +25,7 @@ public abstract class ImagePicker {
     public static final String EXTRA_IMAGE_DIRECTORY = "imageDirectory";
     public static final String EXTRA_RETURN_AFTER_FIRST = "returnAfterFirst";
     public static final String EXTRA_USE_EXTERNAL_PICKERS = "useExternalPickers";
+    public static final String EXTRA_FETCH_LOCATION_DATA = "fetchLocationData";
 
     public static final int MAX_LIMIT = 99;
 
@@ -33,54 +34,37 @@ public abstract class ImagePicker {
 
     private ImagePickerConfig config;
 
-    public abstract void start(int requestCode);
-
-    public static class ImagePickerWithActivity extends ImagePicker {
-
-        private Activity activity;
-
-        public ImagePickerWithActivity(Activity activity) {
-            this.activity = activity;
-            init(activity);
-        }
-
-        @Override
-        public void start(int requestCode) {
-            Intent intent = getIntent(activity);
-            activity.startActivityForResult(intent, requestCode);
-        }
-    }
-
-    public static class ImagePickerWithFragment extends ImagePicker {
-
-        private Fragment fragment;
-
-        public ImagePickerWithFragment(Fragment fragment) {
-            this.fragment = fragment;
-            init(fragment.getActivity());
-        }
-
-        @Override
-        public void start(int requestCode) {
-            Intent intent = getIntent(fragment.getActivity());
-            fragment.startActivityForResult(intent, requestCode);
-        }
-    }
-
-    /* --------------------------------------------------- */
-    /* > Stater */
-    /* --------------------------------------------------- */
-
-    public void init(Context context) {
-        config = new ImagePickerConfig(context);
-    }
-
     public static ImagePickerWithActivity create(Activity activity) {
         return new ImagePickerWithActivity(activity);
     }
 
     public static ImagePickerWithFragment create(Fragment fragment) {
         return new ImagePickerWithFragment(fragment);
+    }
+
+    public static List<Image> getImages(Intent intent) {
+        if (intent == null) {
+            return null;
+        }
+        return intent.getParcelableArrayListExtra(ImagePicker.EXTRA_SELECTED_IMAGES);
+    }
+
+    /* --------------------------------------------------- */
+    /* > Stater */
+    /* --------------------------------------------------- */
+
+    @Nullable
+    public static FileSystemData getFileSystemData(Intent intent) {
+        if (intent == null) {
+            return null;
+        }
+        return intent.getParcelableExtra(ImagePicker.EXTRA_FILESYSTEM_DATA);
+    }
+
+    public abstract void start(int requestCode);
+
+    public void init(Context context) {
+        config = new ImagePickerConfig(context);
     }
 
     /* --------------------------------------------------- */
@@ -142,6 +126,11 @@ public abstract class ImagePicker {
         return this;
     }
 
+    public ImagePicker fetchLocationData(boolean locationdata) {
+        config.setFetchLocationData(locationdata);
+        return this;
+    }
+
     public Intent getIntent(Context context) {
         Intent intent = new Intent(context, ImagePickerActivity.class);
         intent.putExtra(ImagePickerConfig.class.getSimpleName(), config);
@@ -152,18 +141,35 @@ public abstract class ImagePicker {
     /* > Helper */
     /* --------------------------------------------------- */
 
-    public static List<Image> getImages(Intent intent) {
-        if (intent == null) {
-            return null;
+    public static class ImagePickerWithActivity extends ImagePicker {
+
+        private Activity activity;
+
+        public ImagePickerWithActivity(Activity activity) {
+            this.activity = activity;
+            init(activity);
         }
-        return intent.getParcelableArrayListExtra(ImagePicker.EXTRA_SELECTED_IMAGES);
+
+        @Override
+        public void start(int requestCode) {
+            Intent intent = getIntent(activity);
+            activity.startActivityForResult(intent, requestCode);
+        }
     }
 
-    @Nullable
-    public static FileSystemData getFileSystemData(Intent intent) {
-        if (intent == null) {
-            return null;
+    public static class ImagePickerWithFragment extends ImagePicker {
+
+        private Fragment fragment;
+
+        public ImagePickerWithFragment(Fragment fragment) {
+            this.fragment = fragment;
+            init(fragment.getActivity());
         }
-        return intent.getParcelableExtra(ImagePicker.EXTRA_FILESYSTEM_DATA);
+
+        @Override
+        public void start(int requestCode) {
+            Intent intent = getIntent(fragment.getActivity());
+            fragment.startActivityForResult(intent, requestCode);
+        }
     }
 }

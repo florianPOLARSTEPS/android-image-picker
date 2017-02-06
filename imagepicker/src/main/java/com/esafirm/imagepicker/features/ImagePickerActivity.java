@@ -169,7 +169,7 @@ public class ImagePickerActivity extends AppCompatActivity
 
     private void getData() {
         presenter.abortLoad();
-        presenter.loadImages(config.isFolderMode());
+        presenter.loadImages(config);
     }
 
     /**

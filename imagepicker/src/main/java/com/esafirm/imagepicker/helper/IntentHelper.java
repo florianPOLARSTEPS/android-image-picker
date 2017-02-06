@@ -6,6 +6,7 @@ import android.content.Intent;
 import com.esafirm.imagepicker.features.ImagePickerConfig;
 import com.esafirm.imagepicker.model.Image;
 
+import static com.esafirm.imagepicker.features.ImagePicker.EXTRA_FETCH_LOCATION_DATA;
 import static com.esafirm.imagepicker.features.ImagePicker.EXTRA_FOLDER_MODE;
 import static com.esafirm.imagepicker.features.ImagePicker.EXTRA_FOLDER_TITLE;
 import static com.esafirm.imagepicker.features.ImagePicker.EXTRA_IMAGE_DIRECTORY;
@@ -33,6 +34,7 @@ public class IntentHelper {
         config.setImageDirectory(intent.getStringExtra(EXTRA_IMAGE_DIRECTORY));
         config.setReturnAfterFirst(intent.getBooleanExtra(EXTRA_RETURN_AFTER_FIRST, false));
         config.setUseExternalPickers(intent.getBooleanExtra(EXTRA_USE_EXTERNAL_PICKERS, true));
+        config.setFetchLocationData(intent.getBooleanExtra(EXTRA_FETCH_LOCATION_DATA, false));
         return config;
     }
 }

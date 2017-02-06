@@ -40,11 +40,11 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
         imageLoader.abortLoadImages();
     }
 
-    public void loadImages(boolean isFolderMode) {
+    public void loadImages(ImagePickerConfig config) {
         if (!isViewAttached()) return;
 
         getView().showLoading(true);
-        imageLoader.loadDeviceImages(isFolderMode, new ImageLoaderListener() {
+        imageLoader.loadDeviceImages(config, new ImageLoaderListener() {
 
 
             @Override
@@ -136,9 +136,9 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
         }
 
         if (images.size() > 0) {
-            imageLoader.loadExternalDeviceImages(images, new ImageLoaderListener() {
+            imageLoader.loadExternalDeviceImages(config, images, new ImageLoaderListener() {
                 @Override
-                public void onImageLoaded(final List<Image> images, List<Folder> folders, FileSystemData mFileSystemData) {
+                public void onImageLoaded(final List<Image> images, List<Folder> folders, final FileSystemData mFileSystemData) {
                     if (getView() != null) {
                         getView().finishPickImages(images, fileSystemData);
                     } else {
@@ -159,8 +159,6 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
                 }
             });
         }
-
-
     }
 
     public void finishCaptureImage(Context context, Intent data, final ImagePickerConfig config) {
