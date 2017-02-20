@@ -12,6 +12,7 @@ import com.esafirm.imagepicker.features.common.ImageLoaderListener;
 import com.esafirm.imagepicker.model.FileSystemData;
 import com.esafirm.imagepicker.model.Folder;
 import com.esafirm.imagepicker.model.Image;
+import com.facebook.common.util.UriUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -193,37 +194,54 @@ public class ImageLoader {
             List<Image> temp = new ArrayList<>();
 
             for (Uri mImageUri : mImageUris) {
+                if (UriUtil.isLocalContentUri(mImageUri) || UriUtil.isDataUri(mImageUri)) {
+                    Cursor cursor = context.getContentResolver().query(mImageUri, projection,
+                            null, null, null);
 
-                Cursor cursor = context.getContentResolver().query(mImageUri, projection,
-                        null, null, null);
+                    try {
+                        if (cursor == null) {
+                            listener.onFailed(new NullPointerException());
+                            return;
+                        }
 
-                try {
-                    if (cursor == null) {
-                        listener.onFailed(new NullPointerException());
-                        return;
+                        if (cursor.moveToFirst()) {
+                            long id = cursor.getLong(cursor.getColumnIndex(projection[0]));
+                            String name = cursor.getString(cursor.getColumnIndex(projection[1]));
+                            String path = cursor.getString(cursor.getColumnIndex(projection[2]));
+                            Uri contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+
+                            File file = new File(path);
+                            if (file.exists()) {
+                                Image image = new Image(id, name, path, contentUri, false);
+                                if (config.isFetchLocationData()) {
+                                    updateWithExifData(file, image);
+                                }
+                                temp.add(image);
+                            }
+                        }
+                        cursor.close();
+                    } catch (Exception e) {
+                        Log.e(TAG, "error loading image for uri: " + mImageUri);
+                    } finally {
+                        if (cursor != null) {
+                            cursor.close();
+                        }
                     }
-
-                    if (cursor.moveToFirst()) {
-                        long id = cursor.getLong(cursor.getColumnIndex(projection[0]));
-                        String name = cursor.getString(cursor.getColumnIndex(projection[1]));
-                        String path = cursor.getString(cursor.getColumnIndex(projection[2]));
-                        Uri contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                } else if (UriUtil.isLocalFileUri(mImageUri)) {
+                    try {
+                        String name = mImageUri.getLastPathSegment();
+                        String path = mImageUri.getPath();
 
                         File file = new File(path);
                         if (file.exists()) {
-                            Image image = new Image(id, name, path, contentUri, false);
+                            Image image = new Image(path.hashCode(), name, path, mImageUri, false);
                             if (config.isFetchLocationData()) {
                                 updateWithExifData(file, image);
                             }
                             temp.add(image);
                         }
-                    }
-                    cursor.close();
-                } catch (Exception e) {
-                    Log.e(TAG, "error loading image for uri: " + mImageUri);
-                } finally {
-                    if (cursor != null) {
-                        cursor.close();
+                    } catch (Exception e) {
+                        // no idea what happened
                     }
                 }
             }
