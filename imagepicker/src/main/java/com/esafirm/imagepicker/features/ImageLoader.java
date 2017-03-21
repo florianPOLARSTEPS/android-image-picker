@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.esafirm.imagepicker.features.common.ImageLoaderListener;
@@ -188,22 +189,22 @@ public class ImageLoader {
             this.mImageUris = mImageUris;
         }
 
-        @Override
-        public void run() {
+        private Image createSafeImage(@NonNull Uri mImageUri) {
 
-            List<Image> temp = new ArrayList<>();
+            long imageId = mImageUri.hashCode();
+            String imageName = mImageUri.getLastPathSegment();
+            return new Image(imageId, imageName, null, mImageUri, false);
+        }
 
-            for (Uri mImageUri : mImageUris) {
-                if (UriUtil.isLocalContentUri(mImageUri) || UriUtil.isDataUri(mImageUri)) {
-                    Cursor cursor = context.getContentResolver().query(mImageUri, projection,
-                            null, null, null);
+        private Image tryReadWithMediaStorage(Uri mImageUri) throws CannotReadImageFromMediaStoreException {
+            if (UriUtil.isLocalContentUri(mImageUri) || UriUtil.isDataUri(mImageUri)) {
+                Cursor cursor = context.getContentResolver().query(mImageUri, projection,
+                        null, null, null);
 
-                    try {
-                        if (cursor == null) {
-                            listener.onFailed(new NullPointerException());
-                            return;
-                        }
-
+                try {
+                    if (cursor == null) {
+                        listener.onFailed(new NullPointerException());
+                    } else {
                         if (cursor.moveToFirst()) {
                             long id = cursor.getLong(cursor.getColumnIndex(projection[0]));
                             String name = cursor.getString(cursor.getColumnIndex(projection[1]));
@@ -216,37 +217,66 @@ public class ImageLoader {
                                 if (config.isFetchLocationData()) {
                                     updateWithExifData(file, image);
                                 }
-                                temp.add(image);
+                                return image;
                             }
                         }
+                    }
+                } catch (Exception e) {
+                    throw new CannotReadImageFromMediaStoreException(e);
+                } finally {
+                    if (cursor != null) {
                         cursor.close();
-                    } catch (Exception e) {
-                        Log.e(TAG, "error loading image for uri: " + mImageUri);
-                    } finally {
-                        if (cursor != null) {
-                            cursor.close();
-                        }
                     }
-                } else if (UriUtil.isLocalFileUri(mImageUri)) {
-                    try {
-                        String name = mImageUri.getLastPathSegment();
-                        String path = mImageUri.getPath();
+                }
+            } else if (UriUtil.isLocalFileUri(mImageUri)) {
+                try {
+                    String name = mImageUri.getLastPathSegment();
+                    String path = mImageUri.getPath();
 
-                        File file = new File(path);
-                        if (file.exists()) {
-                            Image image = new Image(path.hashCode(), name, path, mImageUri, false);
-                            if (config.isFetchLocationData()) {
-                                updateWithExifData(file, image);
-                            }
-                            temp.add(image);
+                    File file = new File(path);
+                    if (file.exists()) {
+                        Image image = new Image(path.hashCode(), name, path, mImageUri, false);
+                        if (config.isFetchLocationData()) {
+                            updateWithExifData(file, image);
                         }
-                    } catch (Exception e) {
-                        // no idea what happened
+                        return image;
                     }
+                } catch (Exception e) {
+                    throw new CannotReadImageFromMediaStoreException(e);
+                    // no idea what happened
+                }
+            }
+            return null;
+
+        }
+
+        private class CannotReadImageFromMediaStoreException extends IOException {
+            public CannotReadImageFromMediaStoreException(Exception e) {
+                super(e);
+            }
+        }
+
+        @Override
+        public void run() {
+
+            List<Image> temp = new ArrayList<>();
+
+            for (Uri mImageUri : mImageUris) {
+                try {
+                    Image image = tryReadWithMediaStorage(mImageUri);
+                    if (image != null) {
+                        temp.add(image);
+                    } else {
+                        temp.add(createSafeImage(mImageUri));
+                    }
+                } catch (CannotReadImageFromMediaStoreException e) {
+                    temp.add(createSafeImage(mImageUri));
                 }
             }
 
             listener.onImageLoaded(temp, null, null);
         }
+
+
     }
 }

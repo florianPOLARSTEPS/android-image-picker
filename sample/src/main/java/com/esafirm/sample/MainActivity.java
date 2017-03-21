@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
         StringBuilder stringBuffer = new StringBuilder();
         for (int i = 0, l = images.size(); i < l; i++) {
-            stringBuffer.append(images.get(i).getPath()).append("\n");
+            stringBuffer.append(images.get(i).getUri()).append("\n");
         }
         textView.setText(stringBuffer.toString());
     }
