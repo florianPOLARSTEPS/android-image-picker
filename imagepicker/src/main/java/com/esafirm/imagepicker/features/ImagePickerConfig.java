@@ -2,6 +2,7 @@ package com.esafirm.imagepicker.features;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
 import com.esafirm.imagepicker.model.Image;
 
@@ -9,19 +10,8 @@ import java.util.ArrayList;
 
 public class ImagePickerConfig implements Parcelable {
 
-
-    public static final Creator<ImagePickerConfig> CREATOR = new Creator<ImagePickerConfig>() {
-        @Override
-        public ImagePickerConfig createFromParcel(Parcel in) {
-            return new ImagePickerConfig(in);
-        }
-
-        @Override
-        public ImagePickerConfig[] newArray(int size) {
-            return new ImagePickerConfig[size];
-        }
-    };
-    private ArrayList<Image> selectedImages;
+    @NonNull
+    private ArrayList<Image> selectedImages = new ArrayList<>();
     private String folderTitle;
     private String imageTitle;
     private String imageDirectory;
@@ -41,6 +31,7 @@ public class ImagePickerConfig implements Parcelable {
     public ImagePickerConfig() {
     }
 
+
     protected ImagePickerConfig(Parcel in) {
         selectedImages = in.createTypedArrayList(Image.CREATOR);
         folderTitle = in.readString();
@@ -58,6 +49,42 @@ public class ImagePickerConfig implements Parcelable {
         useExternalPickers = in.readByte() != 0;
         fetchLocationData = in.readByte() != 0;
     }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeTypedList(selectedImages);
+        dest.writeString(folderTitle);
+        dest.writeString(imageTitle);
+        dest.writeString(imageDirectory);
+        dest.writeString(dateFolderTitle);
+        dest.writeInt(mode);
+        dest.writeInt(limit);
+        dest.writeLong(folderStartDate);
+        dest.writeLong(folderEndDate);
+        dest.writeByte((byte) (showFolderForDateRange ? 1 : 0));
+        dest.writeByte((byte) (folderMode ? 1 : 0));
+        dest.writeByte((byte) (showCamera ? 1 : 0));
+        dest.writeByte((byte) (returnAfterFirst ? 1 : 0));
+        dest.writeByte((byte) (useExternalPickers ? 1 : 0));
+        dest.writeByte((byte) (fetchLocationData ? 1 : 0));
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<ImagePickerConfig> CREATOR = new Creator<ImagePickerConfig>() {
+        @Override
+        public ImagePickerConfig createFromParcel(Parcel in) {
+            return new ImagePickerConfig(in);
+        }
+
+        @Override
+        public ImagePickerConfig[] newArray(int size) {
+            return new ImagePickerConfig[size];
+        }
+    };
 
     public boolean isReturnAfterFirst() {
         return returnAfterFirst;
@@ -179,27 +206,4 @@ public class ImagePickerConfig implements Parcelable {
         this.dateFolderTitle = dateFolderTitle;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeTypedList(selectedImages);
-        dest.writeString(folderTitle);
-        dest.writeString(imageTitle);
-        dest.writeString(imageDirectory);
-        dest.writeString(dateFolderTitle);
-        dest.writeInt(mode);
-        dest.writeInt(limit);
-        dest.writeLong(folderStartDate);
-        dest.writeLong(folderEndDate);
-        dest.writeByte((byte) (showFolderForDateRange ? 1 : 0));
-        dest.writeByte((byte) (folderMode ? 1 : 0));
-        dest.writeByte((byte) (showCamera ? 1 : 0));
-        dest.writeByte((byte) (returnAfterFirst ? 1 : 0));
-        dest.writeByte((byte) (useExternalPickers ? 1 : 0));
-        dest.writeByte((byte) (fetchLocationData ? 1 : 0));
-    }
 }
