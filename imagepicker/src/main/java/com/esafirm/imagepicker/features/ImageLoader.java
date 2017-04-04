@@ -104,8 +104,14 @@ public class ImageLoader {
 
             List<Image> temp = new ArrayList<>(cursor.getCount());
             Map<String, Folder> folderMap = null;
+            Folder recentFolder = null;
             if (config.isFolderMode()) {
                 folderMap = new HashMap<>();
+                if (config.isShowFolderForDateRange()) {
+                    String title = config.getDateFolderTitle() != null ? config.getDateFolderTitle() : "Recent";
+                    recentFolder = new Folder(title);
+                    recentFolder.setType(Folder.Type.RECENT);
+                }
             }
 
             long imageCount = cursor.getCount();
@@ -117,6 +123,7 @@ public class ImageLoader {
                     String name = cursor.getString(cursor.getColumnIndex(projection[1]));
                     String path = cursor.getString(cursor.getColumnIndex(projection[2]));
                     String bucket = cursor.getString(cursor.getColumnIndex(projection[3]));
+                    long dateTaken = cursor.getLong(cursor.getColumnIndex(projection[5])) * 1000;
                     Uri contentUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
 
                     if (path == null) {
@@ -143,6 +150,12 @@ public class ImageLoader {
                                     folderMap.put(bucket, folder);
                                 }
                                 folder.getImages().add(image);
+
+                                if (config.isShowFolderForDateRange() && recentFolder != null) {
+                                    if (dateTaken >= config.getFolderStartDate() && dateTaken < config.getFolderEndDate()) {
+                                        recentFolder.getImages().add(image);
+                                    }
+                                }
                             }
                         }
                     } catch (Exception e) {
@@ -162,7 +175,12 @@ public class ImageLoader {
                         return folder.getFolderName().compareTo(t1.getFolderName());
                     }
                 });
+
+                if (recentFolder != null) {
+                    folders.add(0, recentFolder);
+                }
             }
+
 
             if (config.isFetchLocationData()) {
                 Log.d(TAG, String.format("%d / %d images with geo coordinates", geoInformationCount, imageCount));

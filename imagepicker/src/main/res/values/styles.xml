@@ -4,6 +4,13 @@
         <item name="colorAccent">@color/ef_colorAccent</item>
         <item name="colorPrimary">@color/ef_colorPrimary</item>
         <item name="colorPrimaryDark">@color/ef_colorPrimaryDark</item>
+
+        <item name="ef_colorBackground">@color/ef_black_alpha_50</item>
+        <item name="ef_colorHighlight">@color/ef_colorAccent</item>
+
+        <item name="ef_textPrimaryColor">@color/ef_white</item>
+        <item name="ef_textSecondaryColor">@color/ef_grey</item>
+        <item name="ef_textHighlightColor">@color/ef_white</item>
     </style>
 
     <style name="ef_AppTheme.Picker" parent="ef_AppTheme">

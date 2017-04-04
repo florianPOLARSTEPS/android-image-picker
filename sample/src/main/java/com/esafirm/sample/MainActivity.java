@@ -24,6 +24,8 @@ import com.esafirm.rximagepicker.RxImagePicker;
 import com.facebook.drawee.backends.pipeline.Fresco;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import rx.Observable;
@@ -66,8 +68,14 @@ public class MainActivity extends AppCompatActivity {
             imagePicker.multi(); // multi mode (default mode)
         }
 
+        Calendar instance = Calendar.getInstance();
+        long now = instance.getTimeInMillis();
+        instance.add(Calendar.DATE, -30);
+        long daysAgo = instance.getTimeInMillis();
+
         imagePicker.limit(10) // max images can be selected (99 by default)
                 .useExternalPickers(true)
+                .highlightFolder(daysAgo, now, "Recent")
                 .showCamera(true) // show camera or not (true by default)
                 .imageDirectory("Camera")   // captured image directory name ("Camera" folder by default)
                 .origin(images) // original selected images, used in multi mode

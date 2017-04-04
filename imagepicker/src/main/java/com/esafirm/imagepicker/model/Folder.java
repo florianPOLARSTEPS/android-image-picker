@@ -10,6 +10,13 @@ public class Folder {
     private String folderName;
     private ArrayList<Image> images;
 
+    private Type type = Type.FOLDER;
+
+    public enum Type {
+        FOLDER,
+        RECENT
+    }
+
     public Folder(String bucket) {
         folderName = bucket;
         images = new ArrayList<>();
@@ -29,5 +36,13 @@ public class Folder {
 
     public void setImages(ArrayList<Image> images) {
         this.images = images;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public Type getType() {
+        return type;
     }
 }

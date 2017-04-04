@@ -64,7 +64,7 @@ public abstract class ImagePicker {
     public abstract void start(int requestCode);
 
     public void init(Context context) {
-        config = new ImagePickerConfig(context);
+        config = new ImagePickerConfig();
     }
 
     /* --------------------------------------------------- */
@@ -123,6 +123,15 @@ public abstract class ImagePicker {
 
     public ImagePicker imageDirectory(String directory) {
         config.setImageDirectory(directory);
+        return this;
+    }
+
+    public ImagePicker highlightFolder(long startDate, long endDate, String folderName) {
+        config.setFolderMode(true);
+        config.setShowFolderForDateRange(true);
+        config.setFolderStartDate(startDate);
+        config.setFolderEndDate(endDate);
+        config.setDateFolderTitle(folderName);
         return this;
     }
 

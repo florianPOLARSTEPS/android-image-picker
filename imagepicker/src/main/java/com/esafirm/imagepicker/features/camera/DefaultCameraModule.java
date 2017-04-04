@@ -21,7 +21,7 @@ public class DefaultCameraModule implements CameraModule, Serializable {
     protected String currentImagePath;
 
     public Intent getCameraIntent(Context context) {
-        return getCameraIntent(context, new ImagePickerConfig(context));
+        return getCameraIntent(context, new ImagePickerConfig());
     }
 
     @Override

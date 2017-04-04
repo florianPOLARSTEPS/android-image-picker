@@ -23,7 +23,7 @@ import static com.esafirm.imagepicker.features.ImagePicker.MODE_MULTIPLE;
 public class IntentHelper {
 
     public static ImagePickerConfig makeConfigFromIntent(Context context, Intent intent) {
-        ImagePickerConfig config = new ImagePickerConfig(context);
+        ImagePickerConfig config = new ImagePickerConfig();
         config.setMode(intent.getIntExtra(EXTRA_MODE, MODE_MULTIPLE));
         config.setLimit(intent.getIntExtra(EXTRA_LIMIT, MAX_LIMIT));
         config.setShowCamera(intent.getBooleanExtra(EXTRA_SHOW_CAMERA, true));

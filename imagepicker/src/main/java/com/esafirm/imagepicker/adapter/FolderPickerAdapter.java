@@ -3,6 +3,7 @@ package com.esafirm.imagepicker.adapter;
 import android.content.Context;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,9 +53,11 @@ public class FolderPickerAdapter extends RecyclerView.Adapter<FolderPickerAdapte
 
         final Folder folder = folders.get(position);
 
-        Uri uri = folder.getImages().get(0).getUri();
-        if (uri != null) {
-            FrescoHelper.setImageUriResizeToImage(holder.image, uri, maxWidth, maxHeight);
+        if (folder.getImages() != null && folder.getImages().size() > 0) {
+            Uri uri = folder.getImages().get(0).getUri();
+            if (uri != null) {
+                FrescoHelper.setImageUriResizeToImage(holder.image, uri, maxWidth, maxHeight);
+            }
         }
         holder.name.setText(folders.get(position).getFolderName());
         holder.number.setText(String.valueOf(folders.get(position).getImages().size()));
@@ -66,6 +69,20 @@ public class FolderPickerAdapter extends RecyclerView.Adapter<FolderPickerAdapte
                     folderClickListener.onFolderClick(folder);
             }
         });
+
+        TypedValue typedValue = new TypedValue();
+        if (folder.getType() == Folder.Type.RECENT) {
+            context.getTheme().resolveAttribute(R.attr.ef_colorHighlight, typedValue, true);
+            holder.background.setBackgroundColor(typedValue.data);
+            context.getTheme().resolveAttribute(R.attr.ef_textHighlightColor, typedValue, true);
+            holder.number.setTextColor(typedValue.data);
+        } else {
+            context.getTheme().resolveAttribute(R.attr.ef_colorBackground, typedValue, true);
+            holder.background.setBackgroundColor(typedValue.data);
+            context.getTheme().resolveAttribute(R.attr.ef_textSecondaryColor, typedValue, true);
+            holder.number.setTextColor(typedValue.data);
+        }
+
     }
 
     @Override
@@ -78,6 +95,7 @@ public class FolderPickerAdapter extends RecyclerView.Adapter<FolderPickerAdapte
         private SimpleDraweeView image;
         private TextView name;
         private TextView number;
+        private View background;
 
         public FolderViewHolder(View itemView) {
             super(itemView);
@@ -85,6 +103,7 @@ public class FolderPickerAdapter extends RecyclerView.Adapter<FolderPickerAdapte
             image = (SimpleDraweeView) itemView.findViewById(R.id.image);
             name = (TextView) itemView.findViewById(R.id.tv_name);
             number = (TextView) itemView.findViewById(R.id.tv_number);
+            background = itemView.findViewById(R.id.v_bg);
         }
     }
 

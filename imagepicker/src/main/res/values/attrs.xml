@@ -16,4 +16,11 @@
     <attr name="ef_camera_icon" format="reference"/>
     <attr name="ef_overflow_icon" format="reference"/>
     <attr name="ef_done_icon" format="reference"/>
+
+    <attr name="ef_colorBackground" format="color"/>
+    <attr name="ef_colorHighlight" format="color"/>
+
+    <attr name="ef_textPrimaryColor" format="color"/>
+    <attr name="ef_textSecondaryColor" format="color"/>
+    <attr name="ef_textHighlightColor" format="color"/>
 </resources>
