@@ -176,7 +176,7 @@ public class ImageLoader {
                     }
                 });
 
-                if (recentFolder != null) {
+                if (recentFolder != null && recentFolder.getImages() != null && recentFolder.getImages().size() > 0) {
                     folders.add(0, recentFolder);
                 }
             }
