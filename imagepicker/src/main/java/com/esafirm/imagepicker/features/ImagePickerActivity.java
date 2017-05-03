@@ -120,6 +120,9 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
         setupView();
 
         orientationBasedUI(getResources().getConfiguration().orientation);
+
+        getDataWithPermission();
+
     }
 
     /**
@@ -267,7 +270,6 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
     @Override
     protected void onResume() {
         super.onResume();
-        getDataWithPermission();
 
         //        if (observer == null) {
         //            observer = new ContentObserver(new Handler()) {

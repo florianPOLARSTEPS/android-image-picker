@@ -130,6 +130,9 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
 
     public void finishPickExternalApplication(Context context, Intent data, final ImagePickerConfig config) {
 
+        if (!isViewAttached()) return;
+        getView().showLoading(true);
+
         List<Uri> images = new ArrayList<>();
         if (data.getData() != null) {
             Uri mImageUri = data.getData();
@@ -193,6 +196,9 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
             imageLoader.loadExternalDeviceImages(config, tempUris, new ImageLoaderListener() {
                 @Override
                 public void onImageLoaded(final List<Image> images, List<Folder> folders, final FileSystemData mFileSystemData) {
+
+                    getView().showLoading(false);
+
                     if (getView() != null) {
                         getView().finishPickImages(images, fileSystemData);
                     } else {
@@ -209,16 +215,19 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
 
                 @Override
                 public void onFailed(Throwable throwable) {
-
+                    getView().showLoading(false);
                 }
             });
         }
     }
 
     public void finishCaptureImage(Context context, Intent data, final ImagePickerConfig config) {
+        if (!isViewAttached()) return;
+        getView().showLoading(true);
         cameraModule.getImage(context, data, new OnImageReadyListener() {
             @Override
             public void onImageReady(List<Image> images) {
+                getView().showLoading(false);
                 getView().finishPickImages(images, fileSystemData);
             }
         });

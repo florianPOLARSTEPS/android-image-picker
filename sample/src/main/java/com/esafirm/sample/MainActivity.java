@@ -52,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
 
     private CameraModule cameraModule;
 
-    private ArrayList<Image> images = new ArrayList<>();
 
     private TextView textView;
 
@@ -110,22 +109,20 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, final int resultCode, Intent data) {
+
         if (requestCode == RC_CODE_PICKER && resultCode == RESULT_OK && data != null) {
-            images = (ArrayList<Image>) ImagePicker.getImages(data);
+            ArrayList<Image> images = (ArrayList<Image>) ImagePicker.getImages(data);
             FileSystemData fileSystemData = ImagePicker.getFileSystemData(data);
             if (fileSystemData != null) {
                 Log.d("FSD", fileSystemData.toString());
             }
             printImages(images);
             loadImages(images);
-            return;
-        }
-
-        if (requestCode == RC_CAMERA && resultCode == RESULT_OK) {
+        } else if (requestCode == RC_CAMERA && resultCode == RESULT_OK) {
             getCameraModule().getImage(this, data, new OnImageReadyListener() {
                 @Override
                 public void onImageReady(List<Image> resultImages) {
-                    images = (ArrayList<Image>) resultImages;
+                    ArrayList<Image> images = (ArrayList<Image>) resultImages;
                     printImages(images);
                     loadImages(images);
                 }
@@ -171,7 +168,6 @@ public class MainActivity extends AppCompatActivity {
                 .highlightFolder(daysAgo, now, "Recent")
                 .showCamera(true) // show camera or not (true by default)
                 .imageDirectory("Camera")   // captured image directory name ("Camera" folder by default)
-                .origin(images) // original selected images, used in multi mode
                 .start(RC_CODE_PICKER); // start image picker activity with request code
     }
 
@@ -182,7 +178,6 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(ImagePicker.EXTRA_MODE, ImagePicker.MODE_MULTIPLE);
         intent.putExtra(ImagePicker.EXTRA_LIMIT, 10);
         intent.putExtra(ImagePicker.EXTRA_SHOW_CAMERA, true);
-        intent.putExtra(ImagePicker.EXTRA_SELECTED_IMAGES, images);
         intent.putExtra(ImagePicker.EXTRA_FOLDER_TITLE, "Album");
         intent.putExtra(ImagePicker.EXTRA_IMAGE_TITLE, "Tap to select images");
         intent.putExtra(ImagePicker.EXTRA_IMAGE_DIRECTORY, "Camera");
