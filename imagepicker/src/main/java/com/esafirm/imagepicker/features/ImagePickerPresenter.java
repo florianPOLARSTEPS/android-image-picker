@@ -22,20 +22,26 @@ import com.esafirm.imagepicker.features.common.ImageLoaderListener;
 import com.esafirm.imagepicker.model.FileSystemData;
 import com.esafirm.imagepicker.model.Folder;
 import com.esafirm.imagepicker.model.Image;
+import com.facebook.common.internal.ByteStreams;
+import com.facebook.common.internal.Closeables;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
 
-    public  FileSystemData fileSystemData;
+    public FileSystemData fileSystemData;
 
     private CameraModule cameraModule = new DefaultCameraModule();
 
-    private Handler      handler      = new Handler(Looper.getMainLooper());
+    private Handler handler = new Handler(Looper.getMainLooper());
 
-    private ImageLoader    imageLoader;
+    private ImageLoader imageLoader;
 
     public ImagePickerPresenter(ImageLoader imageLoader) {
         this.imageLoader = imageLoader;
@@ -144,9 +150,9 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
 
         if (images.size() > 0) {
 
+            ContentResolver resolver = context.getContentResolver();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 final int takeFlags = data.getFlags() & Intent.FLAG_GRANT_READ_URI_PERMISSION;
-                ContentResolver resolver = context.getContentResolver();
                 for (Uri uri : images) {
                     try {
                         resolver.takePersistableUriPermission(uri, takeFlags);
@@ -156,7 +162,35 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
                 }
             }
 
-            imageLoader.loadExternalDeviceImages(config, images, new ImageLoaderListener() {
+            ArrayList<Uri> tempUris = new ArrayList<>();
+            // store a copy somewhere in a temp folder
+            for (Uri image : images) {
+                try {
+                    InputStream inputStream = context.getContentResolver()
+                            .openInputStream(image);
+                    File temp = File.createTempFile(image.getLastPathSegment(), ".tmp", context.getCacheDir());
+                    if (inputStream != null) {
+                        FileOutputStream fileOutputStream = new FileOutputStream(temp);
+                        try {
+                            ByteStreams.copy(inputStream, fileOutputStream);
+                        } finally {
+                            Closeables.closeQuietly(inputStream);
+                            fileOutputStream.flush();
+                            fileOutputStream.close();
+                        }
+                    }
+
+                    tempUris.add(Uri.fromFile(temp));
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
+            imageLoader.loadExternalDeviceImages(config, tempUris, new ImageLoaderListener() {
                 @Override
                 public void onImageLoaded(final List<Image> images, List<Folder> folders, final FileSystemData mFileSystemData) {
                     if (getView() != null) {
