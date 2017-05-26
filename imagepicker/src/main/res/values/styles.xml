@@ -1,6 +1,6 @@
 <resources>
 
-    <style name="ef_AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="ef_AppTheme" parent="@style/Theme.AppCompat.Light.DarkActionBar">
         <item name="colorAccent">@color/ef_colorAccent</item>
         <item name="colorPrimary">@color/ef_colorPrimary</item>
         <item name="colorPrimaryDark">@color/ef_colorPrimaryDark</item>
@@ -27,7 +27,7 @@
 
     </style>
 
-    <style name="ef_CustomToolbarTheme" parent="Base.ThemeOverlay.AppCompat.ActionBar">
+    <style name="ef_CustomToolbarTheme" parent="@style/Base.ThemeOverlay.AppCompat.ActionBar">
         <item name="android:textColorPrimary">@color/ef_colorTextPrimary</item>
         <item name="actionMenuTextColor">@color/ef_colorTextPrimary</item>
     </style>
